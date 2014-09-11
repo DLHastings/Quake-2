@@ -470,6 +470,8 @@ void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 	vec3_t	dir;
 	vec3_t	forward, right, up;
 
+	if (self == NULL) return;
+
 	vectoangles (aimdir, dir);
 	AngleVectors (dir, forward, right, up);
 
