@@ -380,7 +380,16 @@ static void Grenade_Explode (edict_t *ent)
 {
 	vec3_t		origin;
 	int			mod;
+	static int         counter;
+	static float frequency = 1;
 
+	if (ent->spawnflags & 1 && counter == NULL)
+	{
+		counter = (int)(ent->vortexTime/frequency);
+	}
+
+	//while (counter>1) 
+	//{
 	if (ent->owner->client)
 		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
 
@@ -404,7 +413,7 @@ static void Grenade_Explode (edict_t *ent)
 	}
 
 	if (ent->spawnflags & 2)
-		mod = MOD_HELD_GRENADE;
+		mod = MOD_HELD_GRENADE; 
 	else if (ent->spawnflags & 1)
 		mod = MOD_HG_SPLASH;
 	else
@@ -429,8 +438,20 @@ static void Grenade_Explode (edict_t *ent)
 	}
 	gi.WritePosition (origin);
 	gi.multicast (ent->s.origin, MULTICAST_PHS);
-
-	G_FreeEdict (ent);
+	//}
+	if(ent->spawnflags & 1 && counter != NULL && counter>0)
+	{
+		counter--;
+		ent->nextthink = level.time + 1;
+	}
+	else
+	{
+		G_FreeEdict (ent);
+		if (counter != NULL)
+		{
+			counter = NULL;
+		}
+	}
 }
 
 static void Grenade_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
@@ -499,7 +520,7 @@ void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 	gi.linkentity (grenade);
 }
 
-void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held)
+void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held, float vortexTime)
 {
 	edict_t	*grenade;
 	vec3_t	dir;
@@ -527,6 +548,7 @@ void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int 
 	grenade->think = Grenade_Explode;
 	grenade->dmg = damage;
 	grenade->dmg_radius = damage_radius;
+	grenade->vortexTime = vortexTime;
 	grenade->classname = "hgrenade";
 	if (held)
 		grenade->spawnflags = 3;
@@ -536,6 +558,9 @@ void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int 
 
 	if (timer <= 0.0)
 		Grenade_Explode (grenade);
+		//grenade->nextthink = level.time + 1;
+
+		//vortexTime
 	else
 	{
 		gi.sound (self, CHAN_WEAPON, gi.soundindex ("weapons/hgrent1a.wav"), 1, ATTN_NORM, 0);
