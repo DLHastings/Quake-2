@@ -424,7 +424,8 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 			else
 				VectorScale (dir, 500.0 * (float)knockback / mass, kvel);
 
-			VectorAdd (targ->velocity, kvel, targ->velocity);
+			VectorSubtract (targ->velocity, kvel, targ->velocity);
+			
 		}
 	}
 

@@ -1048,7 +1048,7 @@ struct edict_s
 	int			dmg;
 	int			radius_dmg;
 	float		dmg_radius;
-	int         vortexTime;
+	float       vortexTime;
 	int			sounds;			//make this a spawntemp var?
 	int			count;
 

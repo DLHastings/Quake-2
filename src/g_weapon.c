@@ -380,13 +380,15 @@ static void Grenade_Explode (edict_t *ent)
 {
 	vec3_t		origin;
 	int			mod;
-	static int         counter;
+	//static int         counter;
 	static float frequency = 1;
 
-	if (ent->spawnflags & 1 && counter == NULL)
+	gi.cprintf(ent->owner, PRINT_HIGH, "Trying Grenade_Explode");
+	/*if (ent->spawnflags & 1 && counter == NULL)
 	{
 		counter = (int)(ent->vortexTime/frequency);
-	}
+		gi.cprintf(ent->owner, PRINT_HIGH, "Counter starts at: %d", counter);
+	}*/
 
 	//while (counter>1) 
 	//{
@@ -439,18 +441,21 @@ static void Grenade_Explode (edict_t *ent)
 	gi.WritePosition (origin);
 	gi.multicast (ent->s.origin, MULTICAST_PHS);
 	//}
-	if(ent->spawnflags & 1 && counter != NULL && counter>0)
+	if(ent->spawnflags & 1 && ent->vortexTime) //&& counter != NULL && counter>0)
 	{
-		counter--;
+		//counter--;
+		ent->vortexTime--;
 		ent->nextthink = level.time + 1;
+
+		gi.WriteByte (svc_temp_entity);
+		gi.WriteByte (TE_BFG_EXPLOSION);
+		gi.WritePosition (ent->s.origin);
+		gi.multicast (ent->s.origin, MULTICAST_PHS);
+		//gi.cprintf(ent->owner, PRINT_HIGH, "VortexTime value at: %f", ent->vortexTime);
 	}
 	else
 	{
 		G_FreeEdict (ent);
-		if (counter != NULL)
-		{
-			counter = NULL;
-		}
 	}
 }
 
