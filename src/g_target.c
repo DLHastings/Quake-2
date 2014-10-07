@@ -33,7 +33,7 @@ void SP_target_temp_entity (edict_t *ent)
 
 Normal sounds play each time the target is used.  The reliable flag can be set for crucial voiceovers.
 
-Looped sounds are always atten 3 / vol 1, and the use function toggles it on/off.
+Looped sounds are allways atten 3 / vol 1, and the use function toggles it on/off.
 Multiple identical looping sounds will just increase volume without any speed cost.
 */
 void Use_Target_Speaker (edict_t *ent, edict_t *other, edict_t *activator)
@@ -157,7 +157,7 @@ void SP_target_secret (edict_t *ent)
 	ent->svflags = SVF_NOCLIENT;
 	level.total_secrets++;
 	// map bug hack
-	if (!Q_stricmp(level.mapname, "mine3") && ent->s.origin[0] == 280 && ent->s.origin[1] == -2048 && ent->s.origin[2] == -624)
+	if (!stricmp(level.mapname, "mine3") && ent->s.origin[0] == 280 && ent->s.origin[1] == -2048 && ent->s.origin[2] == -624)
 		ent->message = "You have found a secret area.";
 }
 
@@ -251,7 +251,7 @@ Changes level to "map" when fired
 void use_target_changelevel (edict_t *self, edict_t *other, edict_t *activator)
 {
 	if (level.intermissiontime)
-		return;		// already activated
+		return;		// allready activated
 
 	if (!deathmatch->value && !coop->value)
 	{
@@ -290,7 +290,7 @@ void SP_target_changelevel (edict_t *ent)
 	}
 
 	// ugly hack because *SOMEBODY* screwed up their map
-   if((Q_stricmp(level.mapname, "fact1") == 0) && (Q_stricmp(ent->map, "fact3") == 0))
+   if((stricmp(level.mapname, "fact1") == 0) && (stricmp(ent->map, "fact3") == 0))
 	   ent->map = "fact3$secret1";
 
 	ent->use = use_target_changelevel;

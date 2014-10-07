@@ -19,16 +19,14 @@ cvar_t	*dmflags;
 cvar_t	*skill;
 cvar_t	*fraglimit;
 cvar_t	*timelimit;
+//ZOID
+cvar_t	*capturelimit;
+//ZOID
 cvar_t	*password;
-cvar_t	*spectator_password;
-cvar_t	*needpass;
 cvar_t	*maxclients;
-cvar_t	*maxspectators;
 cvar_t	*maxentities;
 cvar_t	*g_select_empty;
 cvar_t	*dedicated;
-
-cvar_t	*filterban;
 
 cvar_t	*sv_maxvelocity;
 cvar_t	*sv_gravity;
@@ -46,12 +44,6 @@ cvar_t	*bob_pitch;
 cvar_t	*bob_roll;
 
 cvar_t	*sv_cheats;
-
-cvar_t	*flood_msgs;
-cvar_t	*flood_persecond;
-cvar_t	*flood_waitdelay;
-
-cvar_t	*sv_maplist;
 
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
 void ClientThink (edict_t *ent, usercmd_t *cmd);
@@ -174,24 +166,6 @@ void ClientEndServerFrames (void)
 
 /*
 =================
-CreateTargetChangeLevel
-
-Returns the created target changelevel
-=================
-*/
-edict_t *CreateTargetChangeLevel(char *map)
-{
-	edict_t *ent;
-
-	ent = G_Spawn ();
-	ent->classname = "target_changelevel";
-	Com_sprintf(level.nextmap, sizeof(level.nextmap), "%s", map);
-	ent->map = level.nextmap;
-	return ent;
-}
-
-/*
-=================
 EndDMLevel
 
 The timelimit or fraglimit has been exceeded
@@ -200,81 +174,33 @@ The timelimit or fraglimit has been exceeded
 void EndDMLevel (void)
 {
 	edict_t		*ent;
-	char *s, *t, *f;
-	static const char *seps = " ,\n\r";
 
 	// stay on same level flag
 	if ((int)dmflags->value & DF_SAME_LEVEL)
 	{
-		BeginIntermission (CreateTargetChangeLevel (level.mapname) );
-		return;
+		ent = G_Spawn ();
+		ent->classname = "target_changelevel";
+		ent->map = level.mapname;
 	}
-
-	// see if it's in the map list
-	if (*sv_maplist->string) {
-		s = strdup(sv_maplist->string);
-		f = NULL;
-		t = strtok(s, seps);
-		while (t != NULL) {
-			if (Q_stricmp(t, level.mapname) == 0) {
-				// it's in the list, go to the next one
-				t = strtok(NULL, seps);
-				if (t == NULL) { // end of list, go to first one
-					if (f == NULL) // there isn't a first one, same level
-						BeginIntermission (CreateTargetChangeLevel (level.mapname) );
-					else
-						BeginIntermission (CreateTargetChangeLevel (f) );
-				} else
-					BeginIntermission (CreateTargetChangeLevel (t) );
-				free(s);
-				return;
-			}
-			if (!f)
-				f = t;
-			t = strtok(NULL, seps);
-		}
-		free(s);
+	else if (level.nextmap[0])
+	{	// go to a specific map
+		ent = G_Spawn ();
+		ent->classname = "target_changelevel";
+		ent->map = level.nextmap;
 	}
-
-	if (level.nextmap[0]) // go to a specific map
-		BeginIntermission (CreateTargetChangeLevel (level.nextmap) );
-	else {	// search for a changelevel
+	else
+	{	// search for a changeleve
 		ent = G_Find (NULL, FOFS(classname), "target_changelevel");
 		if (!ent)
 		{	// the map designer didn't include a changelevel,
 			// so create a fake ent that goes back to the same level
-			BeginIntermission (CreateTargetChangeLevel (level.mapname) );
-			return;
+			ent = G_Spawn ();
+			ent->classname = "target_changelevel";
+			ent->map = level.mapname;
 		}
-		BeginIntermission (ent);
 	}
-}
 
-
-/*
-=================
-CheckNeedPass
-=================
-*/
-void CheckNeedPass (void)
-{
-	int need;
-
-	// if password or spectator_password has changed, update needpass
-	// as needed
-	if (password->modified || spectator_password->modified) 
-	{
-		password->modified = spectator_password->modified = false;
-
-		need = 0;
-
-		if (*password->string && Q_stricmp(password->string, "none"))
-			need |= 1;
-		if (*spectator_password->string && Q_stricmp(spectator_password->string, "none"))
-			need |= 2;
-
-		gi.cvar_set("needpass", va("%d", need));
-	}
+	BeginIntermission (ent);
 }
 
 /*
@@ -305,6 +231,13 @@ void CheckDMRules (void)
 
 	if (fraglimit->value)
 	{
+//ZOID
+		if (ctf->value) {
+			if (CTFCheckRules()) {
+				EndDMLevel ();
+			}
+		}
+//ZOID
 		for (i=0 ; i<maxclients->value ; i++)
 		{
 			cl = game.clients + i;
@@ -349,6 +282,10 @@ void ExitLevel (void)
 		if (ent->health > ent->client->pers.max_health)
 			ent->health = ent->client->pers.max_health;
 	}
+
+//ZOID
+	CTFInit();
+//ZOID
 
 }
 
@@ -413,9 +350,6 @@ void G_RunFrame (void)
 
 	// see if it is time to end a deathmatch
 	CheckDMRules ();
-
-	// see if needpass needs updated
-	CheckNeedPass ();
 
 	// build the playerstate_t structures for all players
 	ClientEndServerFrames ();

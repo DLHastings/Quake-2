@@ -52,10 +52,15 @@ void SelectNextItem (edict_t *ent, int itflags)
 
 	cl = ent->client;
 
-	if (cl->chase_target) {
+//ZOID
+	if (cl->menu) {
+		PMenu_Next(ent);
+		return;
+	} else if (cl->chase_target) {
 		ChaseNext(ent);
 		return;
 	}
+//ZOID
 
 	// scan  for the next valid one
 	for (i=1 ; i<=MAX_ITEMS ; i++)
@@ -84,10 +89,15 @@ void SelectPrevItem (edict_t *ent, int itflags)
 
 	cl = ent->client;
 
-	if (cl->chase_target) {
+//ZOID
+	if (cl->menu) {
+		PMenu_Prev(ent);
+		return;
+	} else if (cl->chase_target) {
 		ChasePrev(ent);
 		return;
 	}
+//ZOID
 
 	// scan  for the next valid one
 	for (i=1 ; i<=MAX_ITEMS ; i++)
@@ -245,14 +255,14 @@ void Cmd_Give_f (edict_t *ent)
 		it = FindItem (name);
 		if (!it)
 		{
-			gi.cprintf (ent, PRINT_HIGH, "unknown item\n");
+			gi.dprintf ("unknown item\n");
 			return;
 		}
 	}
 
 	if (!it->pickup)
 	{
-		gi.cprintf (ent, PRINT_HIGH, "non-pickup item\n");
+		gi.dprintf ("non-pickup item\n");
 		return;
 	}
 
@@ -416,6 +426,13 @@ void Cmd_Drop_f (edict_t *ent)
 	gitem_t		*it;
 	char		*s;
 
+//ZOID--special case for tech powerups
+	if (Q_stricmp(gi.args(), "tech") == 0 && (it = CTFWhat_Tech(ent)) != NULL) {
+		it->drop (ent, it);
+		return;
+	}
+//ZOID
+
 	s = gi.args();
 	it = FindItem (s);
 	if (!it)
@@ -454,11 +471,26 @@ void Cmd_Inven_f (edict_t *ent)
 	cl->showscores = false;
 	cl->showhelp = false;
 
+//ZOID
+	if (ent->client->menu) {
+		PMenu_Close(ent);
+		ent->client->update_chase = true;
+		return;
+	}
+//ZOID
+
 	if (cl->showinventory)
 	{
 		cl->showinventory = false;
 		return;
 	}
+
+//ZOID
+	if (ctf->value && cl->resp.ctf_team == CTF_NOTEAM) {
+		CTFOpenJoinMenu(ent);
+		return;
+	}
+//ZOID
 
 	cl->showinventory = true;
 
@@ -479,6 +511,13 @@ void Cmd_InvUse_f (edict_t *ent)
 {
 	gitem_t		*it;
 
+//ZOID
+	if (ent->client->menu) {
+		PMenu_Select(ent);
+		return;
+	}
+//ZOID
+
 	ValidateSelectedItem (ent);
 
 	if (ent->client->pers.selected_item == -1)
@@ -495,6 +534,25 @@ void Cmd_InvUse_f (edict_t *ent)
 	}
 	it->use (ent, it);
 }
+
+//ZOID
+/*
+=================
+Cmd_LastWeap_f
+=================
+*/
+void Cmd_LastWeap_f (edict_t *ent)
+{
+	gclient_t	*cl;
+
+	cl = ent->client;
+
+	if (!cl->pers.weapon || !cl->pers.lastweapon)
+		return;
+
+	cl->pers.lastweapon->use (ent, cl->pers.lastweapon);
+}
+//ZOID
 
 /*
 =================
@@ -628,12 +686,20 @@ Cmd_Kill_f
 */
 void Cmd_Kill_f (edict_t *ent)
 {
+//ZOID
+	if (ent->solid == SOLID_NOT)
+		return;
+//ZOID
+
 	if((level.time - ent->client->respawn_time) < 5)
 		return;
 	ent->flags &= ~FL_GODMODE;
 	ent->health = 0;
 	meansOfDeath = MOD_SUICIDE;
 	player_die (ent, ent, ent, 100000, vec3_origin);
+	// don't even bother waiting for death frames
+	ent->deadflag = DEAD_DEAD;
+	respawn (ent);
 }
 
 /*
@@ -646,6 +712,11 @@ void Cmd_PutAway_f (edict_t *ent)
 	ent->client->showscores = false;
 	ent->client->showhelp = false;
 	ent->client->showinventory = false;
+//ZOID
+	if (ent->client->menu)
+		PMenu_Close(ent);
+	ent->client->update_chase = true;
+//ZOID
 }
 
 
@@ -767,11 +838,10 @@ Cmd_Say_f
 */
 void Cmd_Say_f (edict_t *ent, qboolean team, qboolean arg0)
 {
-	int		i, j;
+	int		j;
 	edict_t	*other;
 	char	*p;
 	char	text[2048];
-	gclient_t *cl;
 
 	if (gi.argc () < 2 && !arg0)
 		return;
@@ -808,29 +878,6 @@ void Cmd_Say_f (edict_t *ent, qboolean team, qboolean arg0)
 
 	strcat(text, "\n");
 
-	if (flood_msgs->value) {
-		cl = ent->client;
-
-        if (level.time < cl->flood_locktill) {
-			gi.cprintf(ent, PRINT_HIGH, "You can't talk for %d more seconds\n",
-				(int)(cl->flood_locktill - level.time));
-            return;
-        }
-        i = cl->flood_whenhead - flood_msgs->value + 1;
-        if (i < 0)
-            i = (sizeof(cl->flood_when)/sizeof(cl->flood_when[0])) + i;
-		if (cl->flood_when[i] && 
-			level.time - cl->flood_when[i] < flood_persecond->value) {
-			cl->flood_locktill = level.time + flood_waitdelay->value;
-			gi.cprintf(ent, PRINT_CHAT, "Flood protection:  You can't talk for %d seconds.\n",
-				(int)flood_waitdelay->value);
-            return;
-        }
-		cl->flood_whenhead = (cl->flood_whenhead + 1) %
-			(sizeof(cl->flood_when)/sizeof(cl->flood_when[0]));
-		cl->flood_when[cl->flood_whenhead] = level.time;
-	}
-
 	if (dedicated->value)
 		gi.cprintf(NULL, PRINT_CHAT, "%s", text);
 
@@ -849,37 +896,6 @@ void Cmd_Say_f (edict_t *ent, qboolean team, qboolean arg0)
 		gi.cprintf(other, PRINT_CHAT, "%s", text);
 	}
 }
-
-void Cmd_PlayerList_f(edict_t *ent)
-{
-	int i;
-	char st[80];
-	char text[1400];
-	edict_t *e2;
-
-	// connect time, ping, score, name
-	*text = 0;
-	for (i = 0, e2 = g_edicts + 1; i < maxclients->value; i++, e2++) {
-		if (!e2->inuse)
-			continue;
-
-		Com_sprintf(st, sizeof(st), "%02d:%02d %4d %3d %s%s\n",
-			(level.framenum - e2->client->resp.enterframe) / 600,
-			((level.framenum - e2->client->resp.enterframe) % 600)/10,
-			e2->client->ping,
-			e2->client->resp.score,
-			e2->client->pers.netname,
-			e2->client->resp.spectator ? " (spectator)" : "");
-		if (strlen(text) + strlen(st) > sizeof(text) - 50) {
-			sprintf(text+strlen(text), "And more...\n");
-			gi.cprintf(ent, PRINT_HIGH, "%s", text);
-			return;
-		}
-		strcat(text, st);
-	}
-	gi.cprintf(ent, PRINT_HIGH, "%s", text);
-}
-
 
 /*
 =================
@@ -905,9 +921,9 @@ void ClientCommand (edict_t *ent)
 		Cmd_Say_f (ent, false, false);
 		return;
 	}
-	if (Q_stricmp (cmd, "say_team") == 0)
+	if (Q_stricmp (cmd, "say_team") == 0 || Q_stricmp (cmd, "steam") == 0)
 	{
-		Cmd_Say_f (ent, true, false);
+		CTFSay_Team(ent, gi.args());
 		return;
 	}
 	if (Q_stricmp (cmd, "score") == 0)
@@ -966,8 +982,14 @@ void ClientCommand (edict_t *ent)
 		Cmd_PutAway_f (ent);
 	else if (Q_stricmp (cmd, "wave") == 0)
 		Cmd_Wave_f (ent);
-	else if (Q_stricmp(cmd, "playerlist") == 0)
-		Cmd_PlayerList_f(ent);
+//ZOID
+	else if (Q_stricmp (cmd, "team") == 0)
+	{
+		CTFTeam_f (ent);
+	} else if (Q_stricmp(cmd, "id") == 0) {
+		CTFID_f (ent);
+	}
+//ZOID
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
 }

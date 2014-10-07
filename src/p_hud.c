@@ -57,7 +57,12 @@ void BeginIntermission (edict_t *targ)
 	edict_t	*ent, *client;
 
 	if (level.intermissiontime)
-		return;		// already activated
+		return;		// allready activated
+
+//ZOID
+	if (deathmatch->value && ctf->value)
+		CTFCalcScores();
+//ZOID
 
 	game.autosaved = false;
 
@@ -157,12 +162,19 @@ void DeathmatchScoreboardMessage (edict_t *ent, edict_t *killer)
 	edict_t		*cl_ent;
 	char	*tag;
 
+//ZOID
+	if (ctf->value) {
+		CTFScoreboardMessage (ent, killer);
+		return;
+	}
+//ZOID
+
 	// sort the clients by score
 	total = 0;
 	for (i=0 ; i<game.maxclients ; i++)
 	{
 		cl_ent = g_edicts + 1 + i;
-		if (!cl_ent->inuse || game.clients[i].resp.spectator)
+		if (!cl_ent->inuse)
 			continue;
 		score = game.clients[i].resp.score;
 		for (j=0 ; j<total ; j++)
@@ -258,6 +270,10 @@ void Cmd_Score_f (edict_t *ent)
 {
 	ent->client->showinventory = false;
 	ent->client->showhelp = false;
+//ZOID
+	if (ent->client->menu)
+		PMenu_Close(ent);
+//ZOID
 
 	if (!deathmatch->value && !coop->value)
 		return;
@@ -265,10 +281,12 @@ void Cmd_Score_f (edict_t *ent)
 	if (ent->client->showscores)
 	{
 		ent->client->showscores = false;
+		ent->client->update_chase = true;
 		return;
 	}
 
 	ent->client->showscores = true;
+
 	DeathmatchScoreboard (ent);
 }
 
@@ -336,14 +354,14 @@ void Cmd_Help_f (edict_t *ent)
 	ent->client->showinventory = false;
 	ent->client->showscores = false;
 
-	if (ent->client->showhelp && (ent->client->pers.game_helpchanged == game.helpchanged))
+	if (ent->client->showhelp && (ent->client->resp.game_helpchanged == game.helpchanged))
 	{
 		ent->client->showhelp = false;
 		return;
 	}
 
 	ent->client->showhelp = true;
-	ent->client->pers.helpchanged = 0;
+	ent->client->resp.helpchanged = 0;
 	HelpComputer (ent);
 }
 
@@ -492,7 +510,7 @@ void G_SetStats (edict_t *ent)
 	//
 	// help icon / current weapon if not shown
 	//
-	if (ent->client->pers.helpchanged && (level.framenum&8) )
+	if (ent->client->resp.helpchanged && (level.framenum&8) )
 		ent->client->ps.stats[STAT_HELPICON] = gi.imageindex ("i_help");
 	else if ( (ent->client->pers.hand == CENTER_HANDED || ent->client->ps.fov > 91)
 		&& ent->client->pers.weapon)
@@ -500,53 +518,8 @@ void G_SetStats (edict_t *ent)
 	else
 		ent->client->ps.stats[STAT_HELPICON] = 0;
 
-	ent->client->ps.stats[STAT_SPECTATOR] = 0;
-}
-
-/*
-===============
-G_CheckChaseStats
-===============
-*/
-void G_CheckChaseStats (edict_t *ent)
-{
-	int i;
-	gclient_t *cl;
-
-	for (i = 1; i <= maxclients->value; i++) {
-		cl = g_edicts[i].client;
-		if (!g_edicts[i].inuse || cl->chase_target != ent)
-			continue;
-		memcpy(cl->ps.stats, ent->client->ps.stats, sizeof(cl->ps.stats));
-		G_SetSpectatorStats(g_edicts + i);
-	}
-}
-
-/*
-===============
-G_SetSpectatorStats
-===============
-*/
-void G_SetSpectatorStats (edict_t *ent)
-{
-	gclient_t *cl = ent->client;
-
-	if (!cl->chase_target)
-		G_SetStats (ent);
-
-	cl->ps.stats[STAT_SPECTATOR] = 1;
-
-	// layouts are independant in spectator
-	cl->ps.stats[STAT_LAYOUTS] = 0;
-	if (cl->pers.health <= 0 || level.intermissiontime || cl->showscores)
-		cl->ps.stats[STAT_LAYOUTS] |= 1;
-	if (cl->showinventory && cl->pers.health > 0)
-		cl->ps.stats[STAT_LAYOUTS] |= 2;
-
-	if (cl->chase_target && cl->chase_target->inuse)
-		cl->ps.stats[STAT_CHASE] = CS_PLAYERSKINS + 
-			(cl->chase_target - g_edicts) - 1;
-	else
-		cl->ps.stats[STAT_CHASE] = 0;
+//ZOID
+	SetCTFStats(ent);
+//ZOID
 }
 

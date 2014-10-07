@@ -32,12 +32,13 @@ edict_t	*SV_TestEntityPosition (edict_t *ent)
 	trace_t	trace;
 	int		mask;
 
+	
 	if (ent->clipmask)
 		mask = ent->clipmask;
 	else
 		mask = MASK_SOLID;
 	trace = gi.trace (ent->s.origin, ent->mins, ent->maxs, ent->s.origin, ent, mask);
-	
+
 	if (trace.startsolid)
 		return g_edicts;
 		
@@ -144,7 +145,7 @@ int ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 		if (out[i] > -STOP_EPSILON && out[i] < STOP_EPSILON)
 			out[i] = 0;
 	}
-
+	
 	return blocked;
 }
 
@@ -251,9 +252,8 @@ int SV_FlyMove (edict_t *ent, float time, int mask)
 		for (i=0 ; i<numplanes ; i++)
 		{
 			ClipVelocity (original_velocity, planes[i], new_velocity, 1);
-
 			for (j=0 ; j<numplanes ; j++)
-				if ((j != i) && !VectorCompare (planes[i], planes[j]))
+				if (j != i)
 				{
 					if (DotProduct (new_velocity, planes[j]) < 0)
 						break;	// not ok
@@ -890,8 +890,6 @@ void SV_Physics_Step (edict_t *ent)
 
 		gi.linkentity (ent);
 		G_TouchTriggers (ent);
-		if (!ent->inuse)
-			return;
 
 		if (ent->groundentity)
 			if (!wasonground)

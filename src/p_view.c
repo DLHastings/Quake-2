@@ -108,7 +108,7 @@ void P_DamageFeedback (edict_t *player)
 
 	realcount = count;
 	if (count < 10)
-		count = 10;	// always make a visible effect
+		count = 10;	// allways make a visible effect
 
 	// play an apropriate pain sound
 	if ((level.time > player->pain_debounce_time) && !(player->flags & FL_GODMODE) && (client->invincible_framenum <= level.framenum))
@@ -126,7 +126,7 @@ void P_DamageFeedback (edict_t *player)
 		gi.sound (player, CHAN_VOICE, gi.soundindex(va("*pain%i_%i.wav", l, r)), 1, ATTN_NORM, 0);
 	}
 
-	// the total alpha of the blend is always proportional to count
+	// the total alpha of the blend is allways proportional to count
 	if (client->damage_alpha < 0)
 		client->damage_alpha = 0;
 	client->damage_alpha += count*0.01;
@@ -488,7 +488,7 @@ void P_FallingDamage (edict_t *ent)
 	if (ent->s.modelindex != 255)
 		return;		// not in the player model
 
-	if (ent->movetype == MOVETYPE_NOCLIP)
+ 	if (ent->movetype == MOVETYPE_NOCLIP)
 		return;
 
 	if ((ent->client->oldvelocity[2] < 0) && (ent->velocity[2] > ent->client->oldvelocity[2]) && (!ent->groundentity))
@@ -502,6 +502,14 @@ void P_FallingDamage (edict_t *ent)
 		delta = ent->velocity[2] - ent->client->oldvelocity[2];
 	}
 	delta = delta*delta * 0.0001;
+
+//ZOID
+	// never take damage if just release grapple or on grapple
+	if (level.time - ent->client->ctf_grapplereleasetime <= FRAMETIME * 2 ||
+		(ent->client->ctf_grapple && 
+		ent->client->ctf_grapplestate > CTF_GRAPPLE_STATE_FLY))
+		return;
+//ZOID
 
 	// never take falling damage if completely underwater
 	if (ent->waterlevel == 3)
@@ -748,14 +756,26 @@ void G_SetClientEffects (edict_t *ent)
 		}
 	}
 
-	if (ent->client->quad_framenum > level.framenum)
+//ZOID
+	CTFEffects(ent);
+//ZOID
+
+	if (ent->client->quad_framenum > level.framenum
+//ZOID
+		&& (level.framenum & 8)
+//ZOID
+		)
 	{
 		remaining = ent->client->quad_framenum - level.framenum;
 		if (remaining > 30 || (remaining & 4) )
 			ent->s.effects |= EF_QUAD;
 	}
 
-	if (ent->client->invincible_framenum > level.framenum)
+	if (ent->client->invincible_framenum > level.framenum
+//ZOID
+		&& (level.framenum & 8)
+//ZOID
+		)
 	{
 		remaining = ent->client->invincible_framenum - level.framenum;
 		if (remaining > 30 || (remaining & 4) )
@@ -797,16 +817,16 @@ void G_SetClientSound (edict_t *ent)
 {
 	char	*weap;
 
-	if (ent->client->pers.game_helpchanged != game.helpchanged)
+	if (ent->client->resp.game_helpchanged != game.helpchanged)
 	{
-		ent->client->pers.game_helpchanged = game.helpchanged;
-		ent->client->pers.helpchanged = 1;
+		ent->client->resp.game_helpchanged = game.helpchanged;
+		ent->client->resp.helpchanged = 1;
 	}
 
 	// help beep (no more than three times)
-	if (ent->client->pers.helpchanged && ent->client->pers.helpchanged <= 3 && !(level.framenum&63) )
+	if (ent->client->resp.helpchanged && ent->client->resp.helpchanged <= 3 && !(level.framenum&63) )
 	{
-		ent->client->pers.helpchanged++;
+		ent->client->resp.helpchanged++;
 		gi.sound (ent, CHAN_VOICE, gi.soundindex ("misc/pc_up.wav"), 1, ATTN_STATIC, 0);
 	}
 
@@ -860,15 +880,7 @@ void G_SetClientFrame (edict_t *ent)
 	if (!ent->groundentity && client->anim_priority <= ANIM_WAVE)
 		goto newanim;
 
-	if(client->anim_priority == ANIM_REVERSE)
-	{
-		if(ent->s.frame > client->anim_end)
-		{
-			ent->s.frame--;
-			return;
-		}
-	}
-	else if (ent->s.frame < client->anim_end)
+	if (ent->s.frame < client->anim_end)
 	{	// continue an animation
 		ent->s.frame++;
 		return;
@@ -894,10 +906,18 @@ newanim:
 
 	if (!ent->groundentity)
 	{
+//ZOID: if on grapple, don't go into jump frame, go into standing
+//frame
+		if (client->ctf_grapple) {
+			ent->s.frame = FRAME_stand01;
+			client->anim_end = FRAME_stand40;
+		} else {
+//ZOID
 		client->anim_priority = ANIM_JUMP;
 		if (ent->s.frame != FRAME_jump2)
 			ent->s.frame = FRAME_jump1;
 		client->anim_end = FRAME_jump2;
+	}
 	}
 	else if (run)
 	{	// running
@@ -1036,12 +1056,26 @@ void ClientEndServerFrame (edict_t *ent)
 	// should be determined by the client
 	SV_CalcBlend (ent);
 
-	// chase cam stuff
-	if (ent->client->resp.spectator)
-		G_SetSpectatorStats(ent);
-	else
+//ZOID
+	if (!ent->client->chase_target)
+//ZOID
 		G_SetStats (ent);
-	G_CheckChaseStats(ent);
+
+//ZOID
+//update chasecam follower stats
+	for (i = 1; i <= maxclients->value; i++) {
+		edict_t *e = g_edicts + i;
+		if (!ent->inuse ||
+			e->client->chase_target != ent)
+			continue;
+		memcpy(e->client->ps.stats, 
+			ent->client->ps.stats, 
+			sizeof(ent->client->ps.stats));
+		e->client->ps.stats[STAT_LAYOUTS] = 1;
+		break;
+	}
+//ZOID
+
 
 	G_SetClientEvent (ent);
 
@@ -1061,7 +1095,12 @@ void ClientEndServerFrame (edict_t *ent)
 	// if the scoreboard is up, update it
 	if (ent->client->showscores && !(level.framenum & 31) )
 	{
-		DeathmatchScoreboardMessage (ent, ent->enemy);
+//ZOID
+		if (ent->client->menu) {
+			PMenu_Update(ent);
+		} else
+//ZOID
+			DeathmatchScoreboardMessage (ent, ent->enemy);
 		gi.unicast (ent, false);
 	}
 }

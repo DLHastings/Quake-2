@@ -805,7 +805,7 @@ void SP_func_button (edict_t *ent)
 DOORS
 
   spawn a trigger surrounding the entire team unless it is
-  already targeted by another
+  allready targeted by another
 
 ======================================================================
 */
@@ -1541,7 +1541,6 @@ again:
 		first = false;
 		VectorSubtract (ent->s.origin, self->mins, self->s.origin);
 		VectorCopy (self->s.origin, self->s.old_origin);
-		self->s.event = EV_OTHER_TELEPORT;
 		gi.linkentity (self);
 		goto again;
 	}

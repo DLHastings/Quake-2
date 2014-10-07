@@ -210,7 +210,7 @@ static int CheckPowerArmor (edict_t *ent, vec3_t point, vec3_t normal, int damag
 	}
 	else
 	{
-		damagePerCell = 2;
+		damagePerCell = 1; // power armor is weaker in CTF
 		pa_te_type = TE_SHIELD_SPARKS;
 		damage = (2 * damage) / 3;
 	}
@@ -294,8 +294,6 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker)
 	// if attacker is a client, get mad at them because he's good and we're not
 	if (attacker->client)
 	{
-		targ->monsterinfo.aiflags &= ~AI_SOUND_TARGET;
-
 		// this can only happen in coop (both new and old enemies are clients)
 		// only switch if can't see the current enemy
 		if (targ->enemy && targ->enemy->client)
@@ -322,34 +320,33 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker)
 		 (strcmp(attacker->classname, "monster_makron") != 0) &&
 		 (strcmp(attacker->classname, "monster_jorg") != 0) )
 	{
-		if (targ->enemy && targ->enemy->client)
-			targ->oldenemy = targ->enemy;
+		if (targ->enemy)
+			if (targ->enemy->client)
+				targ->oldenemy = targ->enemy;
 		targ->enemy = attacker;
 		if (!(targ->monsterinfo.aiflags & AI_DUCKED))
 			FoundTarget (targ);
 	}
-	// if they *meant* to shoot us, then shoot back
-	else if (attacker->enemy == targ)
+	else
+	// otherwise get mad at whoever they are mad at (help our buddy)
 	{
-		if (targ->enemy && targ->enemy->client)
-			targ->oldenemy = targ->enemy;
-		targ->enemy = attacker;
-		if (!(targ->monsterinfo.aiflags & AI_DUCKED))
-			FoundTarget (targ);
-	}
-	// otherwise get mad at whoever they are mad at (help our buddy) unless it is us!
-	else if (attacker->enemy && attacker->enemy != targ)
-	{
-		if (targ->enemy && targ->enemy->client)
-			targ->oldenemy = targ->enemy;
+		if (targ->enemy)
+			if (targ->enemy->client)
+				targ->oldenemy = targ->enemy;
 		targ->enemy = attacker->enemy;
-		if (!(targ->monsterinfo.aiflags & AI_DUCKED))
-			FoundTarget (targ);
+		FoundTarget (targ);
 	}
 }
 
 qboolean CheckTeamDamage (edict_t *targ, edict_t *attacker)
 {
+//ZOID
+	if (ctf->value && targ->client && attacker->client)
+		if (targ->client->resp.ctf_team == attacker->client->resp.ctf_team &&
+			targ != attacker)
+			return true;
+//ZOID
+
 		//FIXME make the next line real and uncomment this block
 		// if ((ability to damage a teammate == OFF) && (targ's team == attacker's team))
 	return false;
@@ -403,6 +400,11 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	if (!(dflags & DAMAGE_RADIUS) && (targ->svflags & SVF_MONSTER) && (attacker->client) && (!targ->enemy) && (targ->health > 0))
 		damage *= 2;
 
+//ZOID
+//strength tech
+	damage = CTFApplyStrength(attacker, damage);
+//ZOID
+
 	if (targ->flags & FL_NO_KNOCKBACK)
 		knockback = 0;
 
@@ -451,18 +453,36 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 		save = damage;
 	}
 
-	psave = CheckPowerArmor (targ, point, normal, take, dflags);
-	take -= psave;
-
-	asave = CheckArmor (targ, point, normal, take, te_sparks, dflags);
-	take -= asave;
+//ZOID
+//team armor protect
+	if (ctf->value && targ->client && attacker->client &&
+		targ->client->resp.ctf_team == attacker->client->resp.ctf_team &&
+		targ != attacker && ((int)dmflags->value & DF_ARMOR_PROTECT)) {
+		psave = asave = 0;
+	} else {
+//ZOID
+		psave = CheckPowerArmor (targ, point, normal, take, dflags);
+		take -= psave;
+	
+		asave = CheckArmor (targ, point, normal, take, te_sparks, dflags);
+		take -= asave;
+	}
 
 	//treat cheat/powerup savings the same as armor
 	asave += save;
 
+//ZOID
+//resistance tech
+	take = CTFApplyResistance(targ, take);
+//ZOID
+
 	// team damage avoidance
 	if (!(dflags & DAMAGE_NO_PROTECTION) && CheckTeamDamage (targ, attacker))
 		return;
+
+//ZOID
+	CTFCheckHurtCarrier(targ, attacker);
+//ZOID
 
 // do the damage
 	if (take)

@@ -34,7 +34,7 @@ static void SP_FixCoopSpots (edict_t *self)
 		VectorSubtract(self->s.origin, spot->s.origin, d);
 		if (VectorLength(d) < 384)
 		{
-			if ((!self->targetname) || Q_stricmp(self->targetname, spot->targetname) != 0)
+			if ((!self->targetname) || stricmp(self->targetname, spot->targetname) != 0)
 			{
 //				gi.dprintf("FixCoopSpots changed %s at %s targetname from %s to %s\n", self->classname, vtos(self->s.origin), self->targetname, spot->targetname);
 				self->targetname = spot->targetname;
@@ -52,7 +52,7 @@ static void SP_CreateCoopSpots (edict_t *self)
 {
 	edict_t	*spot;
 
-	if(Q_stricmp(level.mapname, "security") == 0)
+	if(stricmp(level.mapname, "security") == 0)
 	{
 		spot = G_Spawn();
 		spot->classname = "info_player_coop";
@@ -90,7 +90,7 @@ void SP_info_player_start(edict_t *self)
 {
 	if (!coop->value)
 		return;
-	if(Q_stricmp(level.mapname, "security") == 0)
+	if(stricmp(level.mapname, "security") == 0)
 	{
 		// invoke one of our gross, ugly, disgusting hacks
 		self->think = SP_CreateCoopSpots;
@@ -123,20 +123,20 @@ void SP_info_player_coop(edict_t *self)
 		return;
 	}
 
-	if((Q_stricmp(level.mapname, "jail2") == 0)   ||
-	   (Q_stricmp(level.mapname, "jail4") == 0)   ||
-	   (Q_stricmp(level.mapname, "mine1") == 0)   ||
-	   (Q_stricmp(level.mapname, "mine2") == 0)   ||
-	   (Q_stricmp(level.mapname, "mine3") == 0)   ||
-	   (Q_stricmp(level.mapname, "mine4") == 0)   ||
-	   (Q_stricmp(level.mapname, "lab") == 0)     ||
-	   (Q_stricmp(level.mapname, "boss1") == 0)   ||
-	   (Q_stricmp(level.mapname, "fact3") == 0)   ||
-	   (Q_stricmp(level.mapname, "biggun") == 0)  ||
-	   (Q_stricmp(level.mapname, "space") == 0)   ||
-	   (Q_stricmp(level.mapname, "command") == 0) ||
-	   (Q_stricmp(level.mapname, "power2") == 0) ||
-	   (Q_stricmp(level.mapname, "strike") == 0))
+	if((stricmp(level.mapname, "jail2") == 0)   ||
+	   (stricmp(level.mapname, "jail4") == 0)   ||
+	   (stricmp(level.mapname, "mine1") == 0)   ||
+	   (stricmp(level.mapname, "mine2") == 0)   ||
+	   (stricmp(level.mapname, "mine3") == 0)   ||
+	   (stricmp(level.mapname, "mine4") == 0)   ||
+	   (stricmp(level.mapname, "lab") == 0)     ||
+	   (stricmp(level.mapname, "boss1") == 0)   ||
+	   (stricmp(level.mapname, "fact3") == 0)   ||
+	   (stricmp(level.mapname, "biggun") == 0)  ||
+	   (stricmp(level.mapname, "space") == 0)   ||
+	   (stricmp(level.mapname, "command") == 0) ||
+	   (stricmp(level.mapname, "power2") == 0) ||
+	   (stricmp(level.mapname, "strike") == 0))
 	{
 		// invoke one of our gross, ugly, disgusting hacks
 		self->think = SP_FixCoopSpots;
@@ -170,24 +170,12 @@ qboolean IsFemale (edict_t *ent)
 	if (!ent->client)
 		return false;
 
-	info = Info_ValueForKey (ent->client->pers.userinfo, "gender");
+	info = Info_ValueForKey (ent->client->pers.userinfo, "skin");
 	if (info[0] == 'f' || info[0] == 'F')
 		return true;
 	return false;
 }
 
-qboolean IsNeutral (edict_t *ent)
-{
-	char		*info;
-
-	if (!ent->client)
-		return false;
-
-	info = Info_ValueForKey (ent->client->pers.userinfo, "gender");
-	if (info[0] != 'f' && info[0] != 'F' && info[0] != 'm' && info[0] != 'M')
-		return true;
-	return false;
-}
 
 void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 {
@@ -195,6 +183,7 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 	char		*message;
 	char		*message2;
 	qboolean	ff;
+
 
 	if (coop->value && attacker->client)
 		meansOfDeath |= MOD_FRIENDLY_FIRE;
@@ -254,17 +243,13 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 				break;
 			case MOD_HG_SPLASH:
 			case MOD_G_SPLASH:
-				if (IsNeutral(self))
-					message = "tripped on its own grenade";
-				else if (IsFemale(self))
+				if (IsFemale(self))
 					message = "tripped on her own grenade";
 				else
 					message = "tripped on his own grenade";
 				break;
 			case MOD_R_SPLASH:
-				if (IsNeutral(self))
-					message = "blew itself up";
-				else if (IsFemale(self))
+				if (IsFemale(self))
 					message = "blew herself up";
 				else
 					message = "blew himself up";
@@ -273,9 +258,7 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 				message = "should have used a smaller gun";
 				break;
 			default:
-				if (IsNeutral(self))
-					message = "killed itself";
-				else if (IsFemale(self))
+				if (IsFemale(self))
 					message = "killed herself";
 				else
 					message = "killed himself";
@@ -286,7 +269,7 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 		{
 			gi.bprintf (PRINT_MEDIUM, "%s %s.\n", self->client->pers.netname, message);
 			if (deathmatch->value)
-				self->client->resp.score--;
+			self->client->resp.score--;
 			self->enemy = NULL;
 			return;
 		}
@@ -364,25 +347,32 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 				message = "tried to invade";
 				message2 = "'s personal space";
 				break;
+//ZOID
+			case MOD_GRAPPLE:
+				message = "was caught by";
+				message2 = "'s grapple";
+				break;
+//ZOID
+
 			}
 			if (message)
 			{
 				gi.bprintf (PRINT_MEDIUM,"%s %s %s%s\n", self->client->pers.netname, message, attacker->client->pers.netname, message2);
 				if (deathmatch->value)
 				{
-					if (ff)
-						attacker->client->resp.score--;
-					else
-						attacker->client->resp.score++;
-				}
-				return;
+				if (ff)
+					attacker->client->resp.score--;
+				else
+					attacker->client->resp.score++;
 			}
+			return;
 		}
+	}
 	}
 
 	gi.bprintf (PRINT_MEDIUM,"%s died.\n", self->client->pers.netname);
 	if (deathmatch->value)
-		self->client->resp.score--;
+	self->client->resp.score--;
 }
 
 
@@ -459,19 +449,7 @@ void LookAtKiller (edict_t *self, edict_t *inflictor, edict_t *attacker)
 		return;
 	}
 
-	if (dir[0])
-		self->client->killer_yaw = 180/M_PI*atan2(dir[1], dir[0]);
-	else {
-		self->client->killer_yaw = 0;
-		if (dir[1] > 0)
-			self->client->killer_yaw = 90;
-		else if (dir[1] < 0)
-			self->client->killer_yaw = -90;
-	}
-	if (self->client->killer_yaw < 0)
-		self->client->killer_yaw += 360;
-	
-
+	self->client->killer_yaw = 180/M_PI*atan2(dir[1], dir[0]);
 }
 
 /*
@@ -489,6 +467,9 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 	self->movetype = MOVETYPE_TOSS;
 
 	self->s.modelindex2 = 0;	// remove linked weapon model
+//ZOID
+	self->s.modelindex3 = 0;	// remove linked ctf flag
+//ZOID
 
 	self->s.angles[0] = 0;
 	self->s.angles[2] = 0;
@@ -507,18 +488,17 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 		LookAtKiller (self, inflictor, attacker);
 		self->client->ps.pmove.pm_type = PM_DEAD;
 		ClientObituary (self, inflictor, attacker);
+//ZOID
+		CTFFragBonuses(self, inflictor, attacker);
+//ZOID
 		TossClientWeapon (self);
-		if (deathmatch->value)
+//ZOID
+		CTFPlayerResetGrapple(self);
+		CTFDeadDropFlag(self);
+		CTFDeadDropTech(self);
+//ZOID
+		if (deathmatch->value && !self->client->showscores)
 			Cmd_Help_f (self);		// show scores
-
-		// clear inventory
-		// this is kind of ugly, but it's how we want to handle keys in coop
-		for (n = 0; n < game.num_items; n++)
-		{
-			if (coop->value && itemlist[n].flags & IT_KEY)
-				self->client->resp.coop_respawn.inventory[n] = self->client->pers.inventory[n];
-			self->client->pers.inventory[n] = 0;
-		}
 	}
 
 	// remove powerups
@@ -526,7 +506,9 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 	self->client->invincible_framenum = 0;
 	self->client->breather_framenum = 0;
 	self->client->enviro_framenum = 0;
-	self->flags &= ~FL_POWER_ARMOR;
+
+	// clear inventory
+	memset(self->client->pers.inventory, 0, sizeof(self->client->pers.inventory));
 
 	if (self->health < -40)
 	{	// gib
@@ -534,7 +516,10 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 		for (n= 0; n < 4; n++)
 			ThrowGib (self, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
 		ThrowClientHead (self, damage);
-
+//ZOID
+		self->client->anim_priority = ANIM_DEATH;
+		self->client->anim_end = 0;
+//ZOID
 		self->takedamage = DAMAGE_NO;
 	}
 	else
@@ -596,6 +581,14 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.inventory[client->pers.selected_item] = 1;
 
 	client->pers.weapon = item;
+//ZOID
+	client->pers.lastweapon = item;
+//ZOID
+
+//ZOID
+	item = FindItem("Grapple");
+	client->pers.inventory[ITEM_INDEX(item)] = 1;
+//ZOID
 
 	client->pers.health			= 100;
 	client->pers.max_health		= 100;
@@ -613,9 +606,23 @@ void InitClientPersistant (gclient_t *client)
 
 void InitClientResp (gclient_t *client)
 {
+//ZOID
+	int ctf_team = client->resp.ctf_team;
+//ZOID
+
 	memset (&client->resp, 0, sizeof(client->resp));
+	
+//ZOID
+	client->resp.ctf_team = ctf_team;
+//ZOID
+
 	client->resp.enterframe = level.framenum;
 	client->resp.coop_respawn = client->pers;
+ 
+//ZOID
+	if (ctf->value && client->resp.ctf_team < CTF_TEAM1)
+		CTFAssignTeam(client);
+//ZOID
 }
 
 /*
@@ -640,7 +647,7 @@ void SaveClientData (void)
 			continue;
 		game.clients[i].pers.health = ent->health;
 		game.clients[i].pers.max_health = ent->max_health;
-		game.clients[i].pers.savedFlags = (ent->flags & (FL_GODMODE|FL_NOTARGET|FL_POWER_ARMOR));
+		game.clients[i].pers.powerArmorActive = (ent->flags & FL_POWER_ARMOR);
 		if (coop->value)
 			game.clients[i].pers.score = ent->client->resp.score;
 	}
@@ -650,7 +657,8 @@ void FetchClientEntData (edict_t *ent)
 {
 	ent->health = ent->client->pers.health;
 	ent->max_health = ent->client->pers.max_health;
-	ent->flags |= ent->client->pers.savedFlags;
+	if (ent->client->pers.powerArmorActive)
+		ent->flags |= FL_POWER_ARMOR;
 	if (coop->value)
 		ent->client->resp.score = ent->client->pers.score;
 }
@@ -858,7 +866,12 @@ void	SelectSpawnPoint (edict_t *ent, vec3_t origin, vec3_t angles)
 	edict_t	*spot = NULL;
 
 	if (deathmatch->value)
-		spot = SelectDeathmatchSpawnPoint ();
+//ZOID
+		if (ctf->value)
+			spot = SelectCTFSpawnPoint(ent);
+		else
+//ZOID
+			spot = SelectDeathmatchSpawnPoint ();
 	else if (coop->value)
 		spot = SelectCoopSpawnPoint (ent);
 
@@ -928,6 +941,7 @@ void CopyToBodyQue (edict_t *ent)
 {
 	edict_t		*body;
 
+
 	// grab a body que and cycle to the next one
 	body = &g_edicts[(int)maxclients->value + level.body_que + 1];
 	level.body_que = (level.body_que + 1) % BODY_QUEUE_SIZE;
@@ -962,10 +976,7 @@ void respawn (edict_t *self)
 {
 	if (deathmatch->value || coop->value)
 	{
-		// spectator's don't leave bodies
-		if (self->movetype != MOVETYPE_NOCLIP)
-			CopyToBodyQue (self);
-		self->svflags &= ~SVF_NOCLIENT;
+		CopyToBodyQue (self);
 		PutClientInServer (self);
 
 		// add a teleportation effect
@@ -982,86 +993,6 @@ void respawn (edict_t *self)
 
 	// restart the entire server
 	gi.AddCommandString ("menu_loadgame\n");
-}
-
-/* 
- * only called when pers.spectator changes
- * note that resp.spectator should be the opposite of pers.spectator here
- */
-void spectator_respawn (edict_t *ent)
-{
-	int i, numspec;
-
-	// if the user wants to become a spectator, make sure he doesn't
-	// exceed max_spectators
-
-	if (ent->client->pers.spectator) {
-		char *value = Info_ValueForKey (ent->client->pers.userinfo, "spectator");
-		if (*spectator_password->string && 
-			strcmp(spectator_password->string, "none") && 
-			strcmp(spectator_password->string, value)) {
-			gi.cprintf(ent, PRINT_HIGH, "Spectator password incorrect.\n");
-			ent->client->pers.spectator = false;
-			gi.WriteByte (svc_stufftext);
-			gi.WriteString ("spectator 0\n");
-			gi.unicast(ent, true);
-			return;
-		}
-
-		// count spectators
-		for (i = 1, numspec = 0; i <= maxclients->value; i++)
-			if (g_edicts[i].inuse && g_edicts[i].client->pers.spectator)
-				numspec++;
-
-		if (numspec >= maxspectators->value) {
-			gi.cprintf(ent, PRINT_HIGH, "Server spectator limit is full.");
-			ent->client->pers.spectator = false;
-			// reset his spectator var
-			gi.WriteByte (svc_stufftext);
-			gi.WriteString ("spectator 0\n");
-			gi.unicast(ent, true);
-			return;
-		}
-	} else {
-		// he was a spectator and wants to join the game
-		// he must have the right password
-		char *value = Info_ValueForKey (ent->client->pers.userinfo, "password");
-		if (*password->string && strcmp(password->string, "none") && 
-			strcmp(password->string, value)) {
-			gi.cprintf(ent, PRINT_HIGH, "Password incorrect.\n");
-			ent->client->pers.spectator = true;
-			gi.WriteByte (svc_stufftext);
-			gi.WriteString ("spectator 1\n");
-			gi.unicast(ent, true);
-			return;
-		}
-	}
-
-	// clear client on respawn
-	ent->client->resp.score = ent->client->pers.score = 0;
-
-	ent->svflags &= ~SVF_NOCLIENT;
-	PutClientInServer (ent);
-
-	// add a teleportation effect
-	if (!ent->client->pers.spectator)  {
-		// send effect
-		gi.WriteByte (svc_muzzleflash);
-		gi.WriteShort (ent-g_edicts);
-		gi.WriteByte (MZ_LOGIN);
-		gi.multicast (ent->s.origin, MULTICAST_PVS);
-
-		// hold in place briefly
-		ent->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
-		ent->client->ps.pmove.pm_time = 14;
-	}
-
-	ent->client->respawn_time = level.time;
-
-	if (ent->client->pers.spectator) 
-		gi.bprintf (PRINT_HIGH, "%s has moved to the sidelines\n", ent->client->pers.netname);
-	else
-		gi.bprintf (PRINT_HIGH, "%s joined the game\n", ent->client->pers.netname);
 }
 
 //==============================================================
@@ -1106,19 +1037,17 @@ void PutClientInServer (edict_t *ent)
 	}
 	else if (coop->value)
 	{
-//		int			n;
+		int			n;
 		char		userinfo[MAX_INFO_STRING];
 
 		resp = client->resp;
 		memcpy (userinfo, client->pers.userinfo, sizeof(userinfo));
 		// this is kind of ugly, but it's how we want to handle keys in coop
-//		for (n = 0; n < game.num_items; n++)
-//		{
-//			if (itemlist[n].flags & IT_KEY)
-//				resp.coop_respawn.inventory[n] = client->pers.inventory[n];
-//		}
-		resp.coop_respawn.game_helpchanged = client->pers.game_helpchanged;
-		resp.coop_respawn.helpchanged = client->pers.helpchanged;
+		for (n = 0; n < MAX_ITEMS; n++)
+		{
+			if (itemlist[n].flags & IT_KEY)
+				resp.coop_respawn.inventory[n] = client->pers.inventory[n];
+		}
 		client->pers = resp.coop_respawn;
 		ClientUserinfoChanged (ent, userinfo);
 		if (resp.score > client->pers.score)
@@ -1171,6 +1100,9 @@ void PutClientInServer (edict_t *ent)
 	client->ps.pmove.origin[0] = spawn_origin[0]*8;
 	client->ps.pmove.origin[1] = spawn_origin[1]*8;
 	client->ps.pmove.origin[2] = spawn_origin[2]*8;
+//ZOID
+	client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
+//ZOID
 
 	if (deathmatch->value && ((int)dmflags->value & DF_FIXED_FOV))
 	{
@@ -1189,12 +1121,9 @@ void PutClientInServer (edict_t *ent)
 
 	// clear entity state values
 	ent->s.effects = 0;
+	ent->s.skinnum = ent - g_edicts - 1;
 	ent->s.modelindex = 255;		// will use the skin specified model
 	ent->s.modelindex2 = 255;		// custom gun model
-	// sknum is player num and weapon number
-	// weapon number will be added in changeweapon
-	ent->s.skinnum = ent - g_edicts - 1;
-
 	ent->s.frame = 0;
 	VectorCopy (spawn_origin, ent->s.origin);
 	ent->s.origin[2] += 1;	// make sure off ground
@@ -1202,9 +1131,7 @@ void PutClientInServer (edict_t *ent)
 
 	// set the delta angle
 	for (i=0 ; i<3 ; i++)
-	{
 		client->ps.pmove.delta_angles[i] = ANGLE2SHORT(spawn_angles[i] - client->resp.cmd_angles[i]);
-	}
 
 	ent->s.angles[PITCH] = 0;
 	ent->s.angles[YAW] = spawn_angles[YAW];
@@ -1212,20 +1139,10 @@ void PutClientInServer (edict_t *ent)
 	VectorCopy (ent->s.angles, client->ps.viewangles);
 	VectorCopy (ent->s.angles, client->v_angle);
 
-	// spawn a spectator
-	if (client->pers.spectator) {
-		client->chase_target = NULL;
-
-		client->resp.spectator = true;
-
-		ent->movetype = MOVETYPE_NOCLIP;
-		ent->solid = SOLID_NOT;
-		ent->svflags |= SVF_NOCLIENT;
-		ent->client->ps.gunindex = 0;
-		gi.linkentity (ent);
+//ZOID
+	if (CTFStartClient(ent))
 		return;
-	} else
-		client->resp.spectator = false;
+//ZOID
 
 	if (!KillBox (ent))
 	{	// could't spawn in?
@@ -1255,18 +1172,11 @@ void ClientBeginDeathmatch (edict_t *ent)
 	// locate ent at a spawn point
 	PutClientInServer (ent);
 
-	if (level.intermissiontime)
-	{
-		MoveClientToIntermission (ent);
-	}
-	else
-	{
-		// send effect
-		gi.WriteByte (svc_muzzleflash);
-		gi.WriteShort (ent-g_edicts);
-		gi.WriteByte (MZ_LOGIN);
-		gi.multicast (ent->s.origin, MULTICAST_PVS);
-	}
+	// send effect
+	gi.WriteByte (svc_muzzleflash);
+	gi.WriteShort (ent-g_edicts);
+	gi.WriteByte (MZ_LOGIN);
+	gi.multicast (ent->s.origin, MULTICAST_PVS);
 
 	gi.bprintf (PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 
@@ -1364,21 +1274,18 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 	s = Info_ValueForKey (userinfo, "name");
 	strncpy (ent->client->pers.netname, s, sizeof(ent->client->pers.netname)-1);
 
-	// set spectator
-	s = Info_ValueForKey (userinfo, "spectator");
-	// spectators are only supported in deathmatch
-	if (deathmatch->value && *s && strcmp(s, "0"))
-		ent->client->pers.spectator = true;
-	else
-		ent->client->pers.spectator = false;
-
 	// set skin
 	s = Info_ValueForKey (userinfo, "skin");
 
 	playernum = ent-g_edicts-1;
 
 	// combine name and skin into a configstring
-	gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s", ent->client->pers.netname, s) );
+//ZOID
+	if (ctf->value)
+		CTFAssignSkin(ent, s);
+	else
+//ZOID
+		gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s", ent->client->pers.netname, s) );
 
 	// fov
 	if (deathmatch->value && ((int)dmflags->value & DF_FIXED_FOV))
@@ -1424,42 +1331,11 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 
 	// check to see if they are on the banned IP list
 	value = Info_ValueForKey (userinfo, "ip");
-	if (SV_FilterPacket(value)) {
-		Info_SetValueForKey(userinfo, "rejmsg", "Banned.");
+
+	// check for a password
+	value = Info_ValueForKey (userinfo, "password");
+	if (strcmp(password->string, value) != 0)
 		return false;
-	}
-
-	// check for a spectator
-	value = Info_ValueForKey (userinfo, "spectator");
-	if (deathmatch->value && *value && strcmp(value, "0")) {
-		int i, numspec;
-
-		if (*spectator_password->string && 
-			strcmp(spectator_password->string, "none") && 
-			strcmp(spectator_password->string, value)) {
-			Info_SetValueForKey(userinfo, "rejmsg", "Spectator password required or incorrect.");
-			return false;
-		}
-
-		// count spectators
-		for (i = numspec = 0; i < maxclients->value; i++)
-			if (g_edicts[i+1].inuse && g_edicts[i+1].client->pers.spectator)
-				numspec++;
-
-		if (numspec >= maxspectators->value) {
-			Info_SetValueForKey(userinfo, "rejmsg", "Server spectator limit is full.");
-			return false;
-		}
-	} else {
-		// check for a password
-		value = Info_ValueForKey (userinfo, "password");
-		if (*password->string && strcmp(password->string, "none") && 
-			strcmp(password->string, value)) {
-			Info_SetValueForKey(userinfo, "rejmsg", "Password required or incorrect.");
-			return false;
-		}
-	}
-
 
 	// they can connect
 	ent->client = game.clients + (ent - g_edicts - 1);
@@ -1469,6 +1345,9 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 	if (ent->inuse == false)
 	{
 		// clear the respawning variables
+//ZOID -- force team join
+		ent->client->resp.ctf_team = -1;
+//ZOID
 		InitClientResp (ent->client);
 		if (!game.autosaved || !ent->client->pers.weapon)
 			InitClientPersistant (ent->client);
@@ -1479,7 +1358,6 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 	if (game.maxclients > 1)
 		gi.dprintf ("%s connected\n", ent->client->pers.netname);
 
-	ent->svflags = 0; // make sure we start with known default
 	ent->client->pers.connected = true;
 	return true;
 }
@@ -1500,6 +1378,11 @@ void ClientDisconnect (edict_t *ent)
 		return;
 
 	gi.bprintf (PRINT_HIGH, "%s disconnected\n", ent->client->pers.netname);
+
+//ZOID
+	CTFDeadDropFlag(ent);
+	CTFDeadDropTech(ent);
+//ZOID
 
 	// send effect
 	gi.WriteByte (svc_muzzleflash);
@@ -1580,111 +1463,116 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 
 	pm_passent = ent;
 
+//ZOID
 	if (ent->client->chase_target) {
-
 		client->resp.cmd_angles[0] = SHORT2ANGLE(ucmd->angles[0]);
 		client->resp.cmd_angles[1] = SHORT2ANGLE(ucmd->angles[1]);
 		client->resp.cmd_angles[2] = SHORT2ANGLE(ucmd->angles[2]);
-
-	} else {
-
-		// set up for pmove
-		memset (&pm, 0, sizeof(pm));
-
-		if (ent->movetype == MOVETYPE_NOCLIP)
-			client->ps.pmove.pm_type = PM_SPECTATOR;
-		else if (ent->s.modelindex != 255)
-			client->ps.pmove.pm_type = PM_GIB;
-		else if (ent->deadflag)
-			client->ps.pmove.pm_type = PM_DEAD;
-		else
-			client->ps.pmove.pm_type = PM_NORMAL;
-
-		client->ps.pmove.gravity = sv_gravity->value;
-		pm.s = client->ps.pmove;
-
-		for (i=0 ; i<3 ; i++)
-		{
-			pm.s.origin[i] = ent->s.origin[i]*8;
-			pm.s.velocity[i] = ent->velocity[i]*8;
-		}
-
-		if (memcmp(&client->old_pmove, &pm.s, sizeof(pm.s)))
-		{
-			pm.snapinitial = true;
-	//		gi.dprintf ("pmove changed!\n");
-		}
-
-		pm.cmd = *ucmd;
-
-		pm.trace = PM_trace;	// adds default parms
-		pm.pointcontents = gi.pointcontents;
-
-		// perform a pmove
-		gi.Pmove (&pm);
-
-		// save results of pmove
-		client->ps.pmove = pm.s;
-		client->old_pmove = pm.s;
-
-		for (i=0 ; i<3 ; i++)
-		{
-			ent->s.origin[i] = pm.s.origin[i]*0.125;
-			ent->velocity[i] = pm.s.velocity[i]*0.125;
-		}
-
-		VectorCopy (pm.mins, ent->mins);
-		VectorCopy (pm.maxs, ent->maxs);
-
-		client->resp.cmd_angles[0] = SHORT2ANGLE(ucmd->angles[0]);
-		client->resp.cmd_angles[1] = SHORT2ANGLE(ucmd->angles[1]);
-		client->resp.cmd_angles[2] = SHORT2ANGLE(ucmd->angles[2]);
-
-		if (ent->groundentity && !pm.groundentity && (pm.cmd.upmove >= 10) && (pm.waterlevel == 0))
-		{
-			gi.sound(ent, CHAN_VOICE, gi.soundindex("*jump1.wav"), 1, ATTN_NORM, 0);
-			PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
-		}
-
-		ent->viewheight = pm.viewheight;
-		ent->waterlevel = pm.waterlevel;
-		ent->watertype = pm.watertype;
-		ent->groundentity = pm.groundentity;
-		if (pm.groundentity)
-			ent->groundentity_linkcount = pm.groundentity->linkcount;
-
-		if (ent->deadflag)
-		{
-			client->ps.viewangles[ROLL] = 40;
-			client->ps.viewangles[PITCH] = -15;
-			client->ps.viewangles[YAW] = client->killer_yaw;
-		}
-		else
-		{
-			VectorCopy (pm.viewangles, client->v_angle);
-			VectorCopy (pm.viewangles, client->ps.viewangles);
-		}
-
-		gi.linkentity (ent);
-
-		if (ent->movetype != MOVETYPE_NOCLIP)
-			G_TouchTriggers (ent);
-
-		// touch other objects
-		for (i=0 ; i<pm.numtouch ; i++)
-		{
-			other = pm.touchents[i];
-			for (j=0 ; j<i ; j++)
-				if (pm.touchents[j] == other)
-					break;
-			if (j != i)
-				continue;	// duplicated
-			if (!other->touch)
-				continue;
-			other->touch (other, ent, NULL, NULL);
-		}
-
+		return;
 	}
+//ZOID
+
+	// set up for pmove
+	memset (&pm, 0, sizeof(pm));
+
+	if (ent->movetype == MOVETYPE_NOCLIP)
+		client->ps.pmove.pm_type = PM_SPECTATOR;
+	else if (ent->s.modelindex != 255)
+		client->ps.pmove.pm_type = PM_GIB;
+	else if (ent->deadflag)
+		client->ps.pmove.pm_type = PM_DEAD;
+	else
+		client->ps.pmove.pm_type = PM_NORMAL;
+
+	client->ps.pmove.gravity = sv_gravity->value;
+	pm.s = client->ps.pmove;
+
+	for (i=0 ; i<3 ; i++)
+	{
+		pm.s.origin[i] = ent->s.origin[i]*8;
+		pm.s.velocity[i] = ent->velocity[i]*8;
+	}
+
+	if (memcmp(&client->old_pmove, &pm.s, sizeof(pm.s)))
+	{
+		pm.snapinitial = true;
+//		gi.dprintf ("pmove changed!\n");
+	}
+
+	pm.cmd = *ucmd;
+
+	pm.trace = PM_trace;	// adds default parms
+	pm.pointcontents = gi.pointcontents;
+
+	// perform a pmove
+	gi.Pmove (&pm);
+
+	// save results of pmove
+	client->ps.pmove = pm.s;
+	client->old_pmove = pm.s;
+
+	for (i=0 ; i<3 ; i++)
+	{
+		ent->s.origin[i] = pm.s.origin[i]*0.125;
+		ent->velocity[i] = pm.s.velocity[i]*0.125;
+	}
+
+	VectorCopy (pm.mins, ent->mins);
+	VectorCopy (pm.maxs, ent->maxs);
+
+	client->resp.cmd_angles[0] = SHORT2ANGLE(ucmd->angles[0]);
+	client->resp.cmd_angles[1] = SHORT2ANGLE(ucmd->angles[1]);
+	client->resp.cmd_angles[2] = SHORT2ANGLE(ucmd->angles[2]);
+
+	if (ent->groundentity && !pm.groundentity && (pm.cmd.upmove >= 10) && (pm.waterlevel == 0))
+	{
+		gi.sound(ent, CHAN_VOICE, gi.soundindex("*jump1.wav"), 1, ATTN_NORM, 0);
+		PlayerNoise(ent, ent->s.origin, PNOISE_SELF);
+	}
+
+	ent->viewheight = pm.viewheight;
+	ent->waterlevel = pm.waterlevel;
+	ent->watertype = pm.watertype;
+	ent->groundentity = pm.groundentity;
+	if (pm.groundentity)
+		ent->groundentity_linkcount = pm.groundentity->linkcount;
+
+	if (ent->deadflag)
+	{
+		client->ps.viewangles[ROLL] = 40;
+		client->ps.viewangles[PITCH] = -15;
+		client->ps.viewangles[YAW] = client->killer_yaw;
+	}
+	else
+	{
+		VectorCopy (pm.viewangles, client->v_angle);
+		VectorCopy (pm.viewangles, client->ps.viewangles);
+	}
+
+//ZOID
+	if (client->ctf_grapple)
+		CTFGrapplePull(client->ctf_grapple);
+//ZOID
+
+	gi.linkentity (ent);
+
+	if (ent->movetype != MOVETYPE_NOCLIP)
+		G_TouchTriggers (ent);
+
+	// touch other objects
+	for (i=0 ; i<pm.numtouch ; i++)
+	{
+		other = pm.touchents[i];
+		for (j=0 ; j<i ; j++)
+			if (pm.touchents[j] == other)
+				break;
+		if (j != i)
+			continue;	// duplicated
+		if (!other->touch)
+			continue;
+		other->touch (other, ent, NULL, NULL);
+	}
+
 
 	client->oldbuttons = client->buttons;
 	client->buttons = ucmd->buttons;
@@ -1695,43 +1583,31 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	ent->light_level = ucmd->lightlevel;
 
 	// fire weapon from final position if needed
-	if (client->latched_buttons & BUTTON_ATTACK)
+	if (client->latched_buttons & BUTTON_ATTACK
+//ZOID
+		&& ent->movetype != MOVETYPE_NOCLIP
+//ZOID
+		)
 	{
-		if (client->resp.spectator) {
-
-			client->latched_buttons = 0;
-
-			if (client->chase_target) {
-				client->chase_target = NULL;
-				client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
-			} else
-				GetChaseTarget(ent);
-
-		} else if (!client->weapon_thunk) {
+		if (!client->weapon_thunk)
+		{
 			client->weapon_thunk = true;
 			Think_Weapon (ent);
 		}
 	}
 
-	if (client->resp.spectator) {
-		if (ucmd->upmove >= 10) {
-			if (!(client->ps.pmove.pm_flags & PMF_JUMP_HELD)) {
-				client->ps.pmove.pm_flags |= PMF_JUMP_HELD;
-				if (client->chase_target)
-					ChaseNext(ent);
-				else
-					GetChaseTarget(ent);
-			}
-		} else
-			client->ps.pmove.pm_flags &= ~PMF_JUMP_HELD;
-	}
+//ZOID
+//regen tech
+	CTFApplyRegeneration(ent);
+//ZOID
 
-	// update chase cam if being followed
+//ZOID
 	for (i = 1; i <= maxclients->value; i++) {
 		other = g_edicts + i;
 		if (other->inuse && other->client->chase_target == ent)
 			UpdateChaseCam(other);
 	}
+//ZOID
 }
 
 
@@ -1753,15 +1629,12 @@ void ClientBeginServerFrame (edict_t *ent)
 
 	client = ent->client;
 
-	if (deathmatch->value &&
-		client->pers.spectator != client->resp.spectator &&
-		(level.time - client->respawn_time) >= 5) {
-		spectator_respawn(ent);
-		return;
-	}
-
 	// run weapon animations if it hasn't been done by a ucmd_t
-	if (!client->weapon_thunk && !client->resp.spectator)
+	if (!client->weapon_thunk
+//ZOID
+		&& ent->movetype != MOVETYPE_NOCLIP
+//ZOID
+		)
 		Think_Weapon (ent);
 	else
 		client->weapon_thunk = false;

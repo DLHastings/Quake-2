@@ -107,13 +107,24 @@ void DoRespawn (edict_t *ent)
 
 		master = ent->teammaster;
 
-		for (count = 0, ent = master; ent; ent = ent->chain, count++)
-			;
+//ZOID
+//in ctf, when we are weapons stay, only the master of a team of weapons
+//is spawned
+		if (ctf->value &&
+			((int)dmflags->value & DF_WEAPONS_STAY) &&
+			master->item && (master->item->flags & IT_WEAPON))
+			ent = master;
+		else {
+//ZOID
 
-		choice = rand() % count;
+			for (count = 0, ent = master; ent; ent = ent->chain, count++)
+				;
 
-		for (count = 0, ent = master; count < choice; ent = ent->chain, count++)
-			;
+			choice = rand() % count;
+
+			for (count = 0, ent = master; count < choice; ent = ent->chain, count++)
+				;
+		}
 	}
 
 	ent->svflags &= ~SVF_NOCLIENT;
@@ -502,16 +513,6 @@ void Drop_Ammo (edict_t *ent, gitem_t *item)
 		dropped->count = item->quantity;
 	else
 		dropped->count = ent->client->pers.inventory[index];
-
-	if (ent->client->pers.weapon && 
-		ent->client->pers.weapon->tag == AMMO_GRENADES &&
-		item->tag == AMMO_GRENADES &&
-		ent->client->pers.inventory[index] - dropped->count <= 0) {
-		gi.cprintf (ent, PRINT_HIGH, "Can't drop current weapon\n");
-		G_FreeEdict(dropped);
-		return;
-	}
-
 	ent->client->pers.inventory[index] -= dropped->count;
 	ValidateSelectedItem (ent);
 }
@@ -521,7 +522,11 @@ void Drop_Ammo (edict_t *ent, gitem_t *item)
 
 void MegaHealth_think (edict_t *self)
 {
-	if (self->owner->health > self->owner->max_health)
+	if (self->owner->health > self->owner->max_health
+//ZOID
+		&& !CTFHasRegeneration(self->owner)
+//ZOID
+		)
 	{
 		self->nextthink = level.time + 1;
 		self->owner->health -= 1;
@@ -540,7 +545,26 @@ qboolean Pickup_Health (edict_t *ent, edict_t *other)
 		if (other->health >= other->max_health)
 			return false;
 
+//ZOID
+	if (other->health >= 250 && ent->count > 25)
+		return false;
+//ZOID
+
 	other->health += ent->count;
+
+//ZOID
+	if (other->health > 250 && ent->count > 25)
+		other->health = 250;
+//ZOID
+
+	if (ent->count == 2)
+		ent->item->pickup_sound = "items/s_health.wav";
+	else if (ent->count == 10)
+		ent->item->pickup_sound = "items/n_health.wav";
+	else if (ent->count == 25)
+		ent->item->pickup_sound = "items/l_health.wav";
+	else // (ent->count == 100)
+		ent->item->pickup_sound = "items/m_health.wav";
 
 	if (!(ent->style & HEALTH_IGNORE_MAX))
 	{
@@ -548,7 +572,11 @@ qboolean Pickup_Health (edict_t *ent, edict_t *other)
 			other->health = other->max_health;
 	}
 
-	if (ent->style & HEALTH_TIMED)
+//ZOID
+	if ((ent->style & HEALTH_TIMED)
+		&& !CTFHasRegeneration(other)
+//ZOID
+	)
 	{
 		ent->think = MegaHealth_think;
 		ent->nextthink = level.time + 5;
@@ -766,21 +794,7 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 		if (ent->item->use)
 			other->client->pers.selected_item = other->client->ps.stats[STAT_SELECTED_ITEM] = ITEM_INDEX(ent->item);
 
-		if (ent->item->pickup == Pickup_Health)
-		{
-			if (ent->count == 2)
-				gi.sound(other, CHAN_ITEM, gi.soundindex("items/s_health.wav"), 1, ATTN_NORM, 0);
-			else if (ent->count == 10)
-				gi.sound(other, CHAN_ITEM, gi.soundindex("items/n_health.wav"), 1, ATTN_NORM, 0);
-			else if (ent->count == 25)
-				gi.sound(other, CHAN_ITEM, gi.soundindex("items/l_health.wav"), 1, ATTN_NORM, 0);
-			else // (ent->count == 100)
-				gi.sound(other, CHAN_ITEM, gi.soundindex("items/m_health.wav"), 1, ATTN_NORM, 0);
-		}
-		else if (ent->item->pickup_sound)
-		{
-			gi.sound(other, CHAN_ITEM, gi.soundindex(ent->item->pickup_sound), 1, ATTN_NORM, 0);
-		}
+		gi.sound(other, CHAN_ITEM, gi.soundindex(ent->item->pickup_sound), 1, ATTN_NORM, 0);
 	}
 
 	if (!(ent->spawnflags & ITEM_TARGETS_USED))
@@ -1101,6 +1115,16 @@ void SpawnItem (edict_t *ent, gitem_t *item)
 		item->drop = NULL;
 	}
 
+//ZOID
+//Don't spawn the flags unless enabled
+	if (!ctf->value &&
+		(strcmp(ent->classname, "item_flag_team1") == 0 ||
+		strcmp(ent->classname, "item_flag_team2") == 0)) {
+		G_FreeEdict(ent);
+		return;
+	}
+//ZOID
+
 	ent->item = item;
 	ent->nextthink = level.time + 2 * FRAMETIME;    // items start after other solids
 	ent->think = droptofloor;
@@ -1108,6 +1132,15 @@ void SpawnItem (edict_t *ent, gitem_t *item)
 	ent->s.renderfx = RF_GLOW;
 	if (ent->model)
 		gi.modelindex (ent->model);
+
+//ZOID
+//flags are server animated and have special handling
+	if (strcmp(ent->classname, "item_flag_team1") == 0 ||
+		strcmp(ent->classname, "item_flag_team2") == 0) {
+		ent->think = CTFFlagSetup;
+	}
+//ZOID
+
 }
 
 //======================================================================
@@ -1139,7 +1172,6 @@ gitem_t	itemlist[] =
 		0,
 		NULL,
 		IT_ARMOR,
-		0,
 		&bodyarmor_info,
 		ARMOR_BODY,
 /* precache */ ""
@@ -1162,7 +1194,6 @@ gitem_t	itemlist[] =
 		0,
 		NULL,
 		IT_ARMOR,
-		0,
 		&combatarmor_info,
 		ARMOR_COMBAT,
 /* precache */ ""
@@ -1185,7 +1216,6 @@ gitem_t	itemlist[] =
 		0,
 		NULL,
 		IT_ARMOR,
-		0,
 		&jacketarmor_info,
 		ARMOR_JACKET,
 /* precache */ ""
@@ -1208,7 +1238,6 @@ gitem_t	itemlist[] =
 		0,
 		NULL,
 		IT_ARMOR,
-		0,
 		NULL,
 		ARMOR_SHARD,
 /* precache */ ""
@@ -1232,7 +1261,6 @@ gitem_t	itemlist[] =
 		60,
 		NULL,
 		IT_ARMOR,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -1255,7 +1283,6 @@ gitem_t	itemlist[] =
 		60,
 		NULL,
 		IT_ARMOR,
-		0,
 		NULL,
 		0,
 /* precache */ "misc/power2.wav misc/power1.wav"
@@ -1265,6 +1292,29 @@ gitem_t	itemlist[] =
 	//
 	// WEAPONS 
 	//
+
+/* weapon_grapple (.3 .3 1) (-16 -16 -16) (16 16 16)
+always owned, never in the world
+*/
+	{
+		"weapon_grapple", 
+		NULL,
+		Use_Weapon,
+		NULL,
+		CTFWeapon_Grapple,
+		"misc/w_pkup.wav",
+		NULL, 0,
+		"models/weapons/grapple/tris.md2",
+/* icon */		"w_grapple",
+/* pickup */	"Grapple",
+		0,
+		0,
+		NULL,
+		IT_WEAPON,
+		NULL,
+		0,
+/* precache */ "weapons/grapple/grfire.wav weapons/grapple/grpull.wav weapons/grapple/grhang.wav weapons/grapple/grreset.wav weapons/grapple/grhit.wav"
+	},
 
 /* weapon_blaster (.3 .3 1) (-16 -16 -16) (16 16 16)
 always owned, never in the world
@@ -1284,12 +1334,12 @@ always owned, never in the world
 		0,
 		NULL,
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_BLASTER,
 		NULL,
 		0,
 /* precache */ "weapons/blastf1a.wav misc/lasfly.wav"
 	},
 
+	
 /*QUAKED weapon_shotgun (.3 .3 1) (-16 -16 -16) (16 16 16)
 */
 	{
@@ -1307,10 +1357,9 @@ always owned, never in the world
 		1,
 		"Shells",
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_SHOTGUN,
 		NULL,
 		0,
-/* precache */ "weapons/shotgf1b.wav weapons/shotgr1b.wav"
+/* precache */ "weapons/v_shotg/flash2/tris.md2 weapons/shotgf1b.wav weapons/shotgr1b.wav"
 	},
 
 /*QUAKED weapon_supershotgun (.3 .3 1) (-16 -16 -16) (16 16 16)
@@ -1330,7 +1379,6 @@ always owned, never in the world
 		2,
 		"Shells",
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_SUPERSHOTGUN,
 		NULL,
 		0,
 /* precache */ "weapons/sshotf1b.wav"
@@ -1353,7 +1401,6 @@ always owned, never in the world
 		1,
 		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_MACHINEGUN,
 		NULL,
 		0,
 /* precache */ "weapons/machgf1b.wav weapons/machgf2b.wav weapons/machgf3b.wav weapons/machgf4b.wav weapons/machgf5b.wav"
@@ -1376,7 +1423,6 @@ always owned, never in the world
 		1,
 		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_CHAINGUN,
 		NULL,
 		0,
 /* precache */ "weapons/chngnu1a.wav weapons/chngnl1a.wav weapons/machgf3b.wav` weapons/chngnd1a.wav"
@@ -1399,7 +1445,6 @@ always owned, never in the world
 		5,
 		"grenades",
 		IT_AMMO|IT_WEAPON,
-		WEAP_GRENADES,
 		NULL,
 		AMMO_GRENADES,
 /* precache */ "weapons/hgrent1a.wav weapons/hgrena1b.wav weapons/hgrenc1b.wav weapons/hgrenb1a.wav weapons/hgrenb2a.wav "
@@ -1422,7 +1467,6 @@ always owned, never in the world
 		1,
 		"Grenades",
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_GRENADELAUNCHER,
 		NULL,
 		0,
 /* precache */ "models/objects/grenade/tris.md2 weapons/grenlf1a.wav weapons/grenlr1b.wav weapons/grenlb1b.wav"
@@ -1445,7 +1489,6 @@ always owned, never in the world
 		1,
 		"Rockets",
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_ROCKETLAUNCHER,
 		NULL,
 		0,
 /* precache */ "models/objects/rocket/tris.md2 weapons/rockfly.wav weapons/rocklf1a.wav weapons/rocklr1b.wav models/objects/debris2/tris.md2"
@@ -1468,7 +1511,6 @@ always owned, never in the world
 		1,
 		"Cells",
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_HYPERBLASTER,
 		NULL,
 		0,
 /* precache */ "weapons/hyprbu1a.wav weapons/hyprbl1a.wav weapons/hyprbf1a.wav weapons/hyprbd1a.wav misc/lasfly.wav"
@@ -1491,7 +1533,6 @@ always owned, never in the world
 		1,
 		"Slugs",
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_RAILGUN,
 		NULL,
 		0,
 /* precache */ "weapons/rg_hum.wav"
@@ -1514,11 +1555,35 @@ always owned, never in the world
 		50,
 		"Cells",
 		IT_WEAPON|IT_STAY_COOP,
-		WEAP_BFG,
 		NULL,
 		0,
 /* precache */ "sprites/s_bfg1.sp2 sprites/s_bfg2.sp2 sprites/s_bfg3.sp2 weapons/bfg__f1y.wav weapons/bfg__l1a.wav weapons/bfg__x1b.wav weapons/bfg_hum.wav"
 	},
+
+#if 0
+//ZOID
+/*QUAKED weapon_laser (.3 .3 1) (-16 -16 -16) (16 16 16)
+*/
+	{
+		"weapon_laser",
+		Pickup_Weapon,
+		Use_Weapon,
+		Drop_Weapon,
+		Weapon_Laser,
+		"misc/w_pkup.wav",
+		"models/weapons/g_laser/tris.md2", EF_ROTATE,
+		"models/weapons/v_laser/tris.md2",
+/* icon */		"w_bfg",
+/* pickup */	"Flashlight Laser",
+		0,
+		1,
+		"Cells",
+		IT_WEAPON,
+		NULL,
+		0,
+/* precache */ ""
+	},
+#endif
 
 	//
 	// AMMO ITEMS
@@ -1541,7 +1606,6 @@ always owned, never in the world
 		10,
 		NULL,
 		IT_AMMO,
-		0,
 		NULL,
 		AMMO_SHELLS,
 /* precache */ ""
@@ -1564,7 +1628,6 @@ always owned, never in the world
 		50,
 		NULL,
 		IT_AMMO,
-		0,
 		NULL,
 		AMMO_BULLETS,
 /* precache */ ""
@@ -1587,7 +1650,6 @@ always owned, never in the world
 		50,
 		NULL,
 		IT_AMMO,
-		0,
 		NULL,
 		AMMO_CELLS,
 /* precache */ ""
@@ -1610,7 +1672,6 @@ always owned, never in the world
 		5,
 		NULL,
 		IT_AMMO,
-		0,
 		NULL,
 		AMMO_ROCKETS,
 /* precache */ ""
@@ -1633,7 +1694,6 @@ always owned, never in the world
 		10,
 		NULL,
 		IT_AMMO,
-		0,
 		NULL,
 		AMMO_SLUGS,
 /* precache */ ""
@@ -1660,7 +1720,6 @@ always owned, never in the world
 		60,
 		NULL,
 		IT_POWERUP,
-		0,
 		NULL,
 		0,
 /* precache */ "items/damage.wav items/damage2.wav items/damage3.wav"
@@ -1683,7 +1742,6 @@ always owned, never in the world
 		300,
 		NULL,
 		IT_POWERUP,
-		0,
 		NULL,
 		0,
 /* precache */ "items/protect.wav items/protect2.wav items/protect4.wav"
@@ -1706,7 +1764,6 @@ always owned, never in the world
 		60,
 		NULL,
 		IT_POWERUP,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -1729,7 +1786,6 @@ always owned, never in the world
 		60,
 		NULL,
 		IT_STAY_COOP|IT_POWERUP,
-		0,
 		NULL,
 		0,
 /* precache */ "items/airout.wav"
@@ -1752,7 +1808,6 @@ always owned, never in the world
 		60,
 		NULL,
 		IT_STAY_COOP|IT_POWERUP,
-		0,
 		NULL,
 		0,
 /* precache */ "items/airout.wav"
@@ -1775,7 +1830,6 @@ Special item that gives +2 to maximum health
 /* width */		2,
 		60,
 		NULL,
-		0,
 		0,
 		NULL,
 		0,
@@ -1800,7 +1854,6 @@ gives +1 to maximum health
 		60,
 		NULL,
 		0,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -1823,7 +1876,6 @@ gives +1 to maximum health
 		60,
 		NULL,
 		0,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -1845,7 +1897,6 @@ gives +1 to maximum health
 /* width */		2,
 		180,
 		NULL,
-		0,
 		0,
 		NULL,
 		0,
@@ -1873,7 +1924,6 @@ key for computer centers
 		0,
 		NULL,
 		IT_STAY_COOP|IT_KEY,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -1897,7 +1947,6 @@ warehouse circuits
 		0,
 		NULL,
 		IT_STAY_COOP|IT_KEY,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -1921,7 +1970,6 @@ key for the entrance of jail3
 		0,
 		NULL,
 		IT_STAY_COOP|IT_KEY,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -1945,7 +1993,6 @@ key for the city computer
 		0,
 		NULL,
 		IT_STAY_COOP|IT_KEY,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -1969,7 +2016,6 @@ security pass for the security level
 		0,
 		NULL,
 		IT_STAY_COOP|IT_KEY,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -1993,7 +2039,6 @@ normal door key - blue
 		0,
 		NULL,
 		IT_STAY_COOP|IT_KEY,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -2017,7 +2062,6 @@ normal door key - red
 		0,
 		NULL,
 		IT_STAY_COOP|IT_KEY,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -2041,7 +2085,6 @@ tank commander's head
 		0,
 		NULL,
 		IT_STAY_COOP|IT_KEY,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -2065,7 +2108,6 @@ tank commander's head
 		0,
 		NULL,
 		IT_STAY_COOP|IT_KEY,
-		0,
 		NULL,
 		0,
 /* precache */ ""
@@ -2086,11 +2128,142 @@ tank commander's head
 		0,
 		NULL,
 		0,
+		NULL,
+		0,
+/* precache */ ""
+	},
+
+
+//ZOID
+/*QUAKED item_flag_team1 (1 0.2 0) (-16 -16 -24) (16 16 32)
+*/
+	{
+		"item_flag_team1",
+		CTFPickup_Flag,
+		NULL,
+		CTFDrop_Flag, //Should this be null if we don't want players to drop it manually?
+		NULL,
+		"ctf/flagtk.wav",
+		"players/male/flag1.md2", EF_FLAG1,
+		NULL,
+/* icon */		"i_ctf1",
+/* pickup */	"Red Flag",
+/* width */		2,
 		0,
 		NULL,
 		0,
-/* precache */ "items/s_health.wav items/n_health.wav items/l_health.wav items/m_health.wav"
+		NULL,
+		0,
+/* precache */ "ctf/flagcap.wav"
 	},
+
+/*QUAKED item_flag_team2 (1 0.2 0) (-16 -16 -24) (16 16 32)
+*/
+	{
+		"item_flag_team2",
+		CTFPickup_Flag,
+		NULL,
+		CTFDrop_Flag, //Should this be null if we don't want players to drop it manually?
+		NULL,
+		"ctf/flagtk.wav",
+		"players/male/flag2.md2", EF_FLAG2,
+		NULL,
+/* icon */		"i_ctf2",
+/* pickup */	"Blue Flag",
+/* width */		2,
+		0,
+		NULL,
+		0,
+		NULL,
+		0,
+/* precache */ "ctf/flagcap.wav"
+	},
+
+/* Resistance Tech */
+	{
+		"item_tech1",
+		CTFPickup_Tech,
+		NULL,
+		CTFDrop_Tech, //Should this be null if we don't want players to drop it manually?
+		NULL,
+		"items/pkup.wav",
+		"models/ctf/resistance/tris.md2", EF_ROTATE,
+		NULL,
+/* icon */		"tech1",
+/* pickup */	"Disruptor Shield",
+/* width */		2,
+		0,
+		NULL,
+		IT_TECH,
+		NULL,
+		0,
+/* precache */ "ctf/tech1.wav"
+	},
+
+/* Strength Tech */
+	{
+		"item_tech2",
+		CTFPickup_Tech,
+		NULL,
+		CTFDrop_Tech, //Should this be null if we don't want players to drop it manually?
+		NULL,
+		"items/pkup.wav",
+		"models/ctf/strength/tris.md2", EF_ROTATE,
+		NULL,
+/* icon */		"tech2",
+/* pickup */	"Power Amplifier",
+/* width */		2,
+		0,
+		NULL,
+		IT_TECH,
+		NULL,
+		0,
+/* precache */ "ctf/tech2.wav ctf/tech2x.wav"
+	},
+
+/* Haste Tech */
+	{
+		"item_tech3",
+		CTFPickup_Tech,
+		NULL,
+		CTFDrop_Tech, //Should this be null if we don't want players to drop it manually?
+		NULL,
+		"items/pkup.wav",
+		"models/ctf/haste/tris.md2", EF_ROTATE,
+		NULL,
+/* icon */		"tech3",
+/* pickup */	"Time Accel",
+/* width */		2,
+		0,
+		NULL,
+		IT_TECH,
+		NULL,
+		0,
+/* precache */ "ctf/tech3.wav"
+	},
+
+/* Regeneration Tech */
+	{
+		"item_tech4",
+		CTFPickup_Tech,
+		NULL,
+		CTFDrop_Tech, //Should this be null if we don't want players to drop it manually?
+		NULL,
+		"items/pkup.wav",
+		"models/ctf/regeneration/tris.md2", EF_ROTATE,
+		NULL,
+/* icon */		"tech4",
+/* pickup */	"AutoDoc",
+/* width */		2,
+		0,
+		NULL,
+		IT_TECH,
+		NULL,
+		0,
+/* precache */ "ctf/tech4.wav"
+	},
+
+//ZOID
 
 	// end of list marker
 	{NULL}
