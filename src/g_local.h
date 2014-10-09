@@ -604,6 +604,8 @@ void	G_InitEdict (edict_t *e);
 edict_t	*G_Spawn (void);
 void	G_FreeEdict (edict_t *e);
 
+void    G_SpawnerThink (edict_t *e);//Hastings
+
 void	G_TouchTriggers (edict_t *ent);
 void	G_TouchSolids (edict_t *ent);
 

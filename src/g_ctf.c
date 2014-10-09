@@ -730,7 +730,7 @@ static void CTFDropFlagTouch(edict_t *ent, edict_t *other, cplane_t *plane, csur
 {
 	//owner (who dropped us) can't touch for two secs
 	if (other == ent->owner && 
-		ent->nextthink - level.time > CTF_AUTO_FLAG_RETURN_TIMEOUT-2)
+		ent->nextthink - level.time > CTF_AUTO_FLAG_RETURN_TIMEOUT-2)//Hastings- I think this doesn't behave the way its supposed to... player can't pick up for 28 secs
 		return;
 
 	Touch_Item (ent, other, plane, surf);
@@ -773,7 +773,7 @@ void CTFDeadDropFlag(edict_t *self)
 
 	if (dropped) {
 		dropped->think = CTFDropFlagThink;
-		dropped->nextthink = level.time + CTF_AUTO_FLAG_RETURN_TIMEOUT;
+		dropped->nextthink = level.time + CTF_AUTO_FLAG_RETURN_TIMEOUT;//Hastings
 		dropped->touch = CTFDropFlagTouch;
 	}
 }
@@ -2454,9 +2454,10 @@ void CTFShowScores(edict_t *ent, pmenu_t *p)
 
 pmenu_t creditsmenu[] = {
 	{ "*Quake II",						PMENU_ALIGN_CENTER, NULL, NULL },
-	{ "*ThreeWave Capture the Flag",	PMENU_ALIGN_CENTER, NULL, NULL },
+	{ "*Horde vs Horde Mode",	PMENU_ALIGN_CENTER, NULL, NULL },
 	{ NULL,								PMENU_ALIGN_CENTER, NULL, NULL },
 	{ "*Programming",					PMENU_ALIGN_CENTER, NULL, NULL }, 
+	{ "Daniel Hastings",				PMENU_ALIGN_CENTER, NULL, NULL },
 	{ "Dave 'Zoid' Kirsch",				PMENU_ALIGN_CENTER, NULL, NULL },
 	{ "*Level Design", 					PMENU_ALIGN_CENTER, NULL, NULL },
 	{ "Christian Antkow",				PMENU_ALIGN_CENTER, NULL, NULL },
@@ -2476,7 +2477,7 @@ pmenu_t creditsmenu[] = {
 
 pmenu_t joinmenu[] = {
 	{ "*Quake II",			PMENU_ALIGN_CENTER, NULL, NULL },
-	{ "*ThreeWave Capture the Flag",	PMENU_ALIGN_CENTER, NULL, NULL },
+	{ "*Horde vs Horde Mode",	PMENU_ALIGN_CENTER, NULL, NULL },
 	{ NULL,					PMENU_ALIGN_CENTER, NULL, NULL },
 	{ NULL,					PMENU_ALIGN_CENTER, NULL, NULL },
 	{ "Join Red Team",		PMENU_ALIGN_LEFT, NULL, CTFJoinTeam1 },
@@ -2499,7 +2500,7 @@ int CTFUpdateJoinMenu(edict_t *ent)
 	static char levelname[32];
 	static char team1players[32];
 	static char team2players[32];
-	int num1, num2, i;
+	int playersTeam1, playersTeam2, i;
 
 	joinmenu[4].text = "Join Red Team";
 	joinmenu[4].SelectFunc = CTFJoinTeam1;
@@ -2528,18 +2529,18 @@ int CTFUpdateJoinMenu(edict_t *ent)
 		strncpy(levelname+1, level.mapname, sizeof(levelname) - 2);
 	levelname[sizeof(levelname) - 1] = 0;
 
-	num1 = num2 = 0;
+	playersTeam1 = playersTeam2 = 0;
 	for (i = 0; i < maxclients->value; i++) {
 		if (!g_edicts[i+1].inuse)
 			continue;
 		if (game.clients[i].resp.ctf_team == CTF_TEAM1)
-			num1++;
+			playersTeam1++;
 		else if (game.clients[i].resp.ctf_team == CTF_TEAM2)
-			num2++;
+			playersTeam2++;
 	}
 
-	sprintf(team1players, "  (%d players)", num1);
-	sprintf(team2players, "  (%d players)", num2);
+	sprintf(team1players, "  (%d players)", playersTeam1);
+	sprintf(team2players, "  (%d players)", playersTeam2);
 
 	joinmenu[2].text = levelname;
 	if (joinmenu[4].text)
@@ -2551,9 +2552,9 @@ int CTFUpdateJoinMenu(edict_t *ent)
 	else
 		joinmenu[7].text = NULL;
 	
-	if (num1 > num2)
+	if (playersTeam1 > playersTeam2)
 		return CTF_TEAM1;
-	else if (num2 > num1)
+	else if (playersTeam2 > playersTeam1)
 		return CTF_TEAM1;
 	return (rand() & 1) ? CTF_TEAM1 : CTF_TEAM2;
 }

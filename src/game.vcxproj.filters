@@ -2,15 +2,15 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{88ca72e5-8b56-4921-9446-f61ac20614e5}</UniqueIdentifier>
+      <UniqueIdentifier>{e6ac8e38-c305-40e7-bf6c-a83a8d73291a}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90</Extensions>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{1523cae9-ff87-467c-b0c9-28d420abd96d}</UniqueIdentifier>
+      <UniqueIdentifier>{ef5c433d-c8b3-438c-9a5f-531e7d04b789}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;fi;fd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{282f21cb-7b92-47af-83fd-665272b392e0}</UniqueIdentifier>
+      <UniqueIdentifier>{0450974b-64e1-4e21-89dd-3b17ac8314f7}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
   </ItemGroup>
@@ -25,6 +25,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="g_combat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ctf.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="g_func.c">
@@ -60,13 +63,34 @@
     <ClCompile Include="g_trigger.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="g_turret.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="g_utils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="g_weapon.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="m_move.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_client.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_hud.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_menu.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_trail.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_view.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_weapon.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="q_shared.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="m_actor.c">
@@ -123,9 +147,6 @@
     <ClCompile Include="m_medic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="m_move.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="m_mutant.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -141,48 +162,39 @@
     <ClCompile Include="m_tank.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="p_client.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="p_hud.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="p_trail.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="p_view.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="p_weapon.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="q_shared.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="g_ctf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="g_local.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="m_actor.h">
+    <ClInclude Include="p_menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="m_berserk.h">
+    <ClInclude Include="q_shared.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="m_boss2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="m_boss31.h">
+    <ClInclude Include="m_brain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="m_boss32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="m_brain.h">
+    <ClInclude Include="m_boss31.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="m_boss2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="m_berserk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="m_actor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="m_chick.h">
@@ -224,6 +236,9 @@
     <ClInclude Include="m_player.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="m_rider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="m_soldier.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -233,13 +248,11 @@
     <ClInclude Include="m_tank.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="q_shared.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="game.def">
-      <Filter>Resource Files</Filter>
+      <Filter>Source Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="laser.txt" />
   </ItemGroup>
 </Project>

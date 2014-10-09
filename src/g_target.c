@@ -358,7 +358,7 @@ For gibs:
 */
 void ED_CallSpawn (edict_t *ent);
 
-void use_target_spawner (edict_t *self, edict_t *other, edict_t *activator)
+void use_target_spawner (edict_t *self, edict_t *other, edict_t *activator)//Hastings
 {
 	edict_t	*ent;
 
@@ -376,13 +376,32 @@ void use_target_spawner (edict_t *self, edict_t *other, edict_t *activator)
 
 void SP_target_spawner (edict_t *self)
 {
+	if (self->targetname=="leftsideBottomLeftSpawner"&&!self->nextthink)
+	{
+		gi.dprintf("LeftsideBottomLeftSpawner activated");
+		self->nextthink = level.time + 120;
+	}
+	
 	self->use = use_target_spawner;
 	self->svflags = SVF_NOCLIENT;
+
+	
 	if (self->speed)
 	{
 		G_SetMovedir (self->s.angles, self->movedir);
 		VectorScale (self->movedir, self->speed, self->movedir);
 	}
+
+	
+
+	/*self->s.frame++;
+	self->nextthink = level.time + FRAMETIME;
+
+	if (self->s.frame == 10)
+	{
+		self->think = G_FreeEdict;
+		self->nextthink = level.time + 8 + random()*10;
+	}*/
 }
 
 //==========================================================

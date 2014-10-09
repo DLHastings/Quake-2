@@ -183,7 +183,7 @@ spawn_t	spawns[] = {
 	{"target_crosslevel_target", SP_target_crosslevel_target},
 	{"target_laser", SP_target_laser},
 	{"target_help", SP_target_help},
-#if 0 // remove monster code
+#if 1 // remove monster code
 	{"target_actor", SP_target_actor},
 #endif
 	{"target_lightramp", SP_target_lightramp},
@@ -210,13 +210,13 @@ spawn_t	spawns[] = {
 	{"misc_ctf_small_banner", SP_misc_ctf_small_banner},
 //ZOID
 	{"misc_satellite_dish", SP_misc_satellite_dish},
-#if 0 // remove monster code
+#if 1 // remove monster code
 	{"misc_actor", SP_misc_actor},
 #endif
 	{"misc_gib_arm", SP_misc_gib_arm},
 	{"misc_gib_leg", SP_misc_gib_leg},
 	{"misc_gib_head", SP_misc_gib_head},
-#if 0 // remove monster code
+#if 1 // remove monster code
 	{"misc_insane", SP_misc_insane},
 #endif
 	{"misc_deadsoldier", SP_misc_deadsoldier},
@@ -235,7 +235,7 @@ spawn_t	spawns[] = {
 	{"misc_easterchick", SP_misc_easterchick},
 	{"misc_easterchick2", SP_misc_easterchick2},
 
-#if 0 // remove monster code
+#if 1 // remove monster code
 	{"monster_berserk", SP_monster_berserk},
 	{"monster_gladiator", SP_monster_gladiator},
 	{"monster_gunner", SP_monster_gunner},
@@ -260,7 +260,8 @@ spawn_t	spawns[] = {
 	{"monster_jorg", SP_monster_jorg},
 
 	{"monster_commander_body", SP_monster_commander_body},
-
+#endif
+#if 0 // remove monster code
 	{"turret_breach", SP_turret_breach},
 	{"turret_base", SP_turret_base},
 	{"turret_driver", SP_turret_driver},

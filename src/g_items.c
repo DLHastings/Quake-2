@@ -97,7 +97,7 @@ gitem_t	*FindItem (char *pickup_name)
 
 //======================================================================
 
-void DoRespawn (edict_t *ent)
+void DoRespawn (edict_t *ent)//Hastings
 {
 	if (ent->team)
 	{
@@ -176,7 +176,7 @@ qboolean Pickup_Powerup (edict_t *ent, edict_t *other)
 	return true;
 }
 
-void Drop_General (edict_t *ent, gitem_t *item)
+void Drop_General (edict_t *ent, gitem_t *item)//Hastings-remove this to stop weapon drops (maybe)
 {
 	Drop_Item (ent, item);
 	ent->client->pers.inventory[ITEM_INDEX(item)]--;

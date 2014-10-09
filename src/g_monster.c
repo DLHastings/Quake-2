@@ -580,6 +580,7 @@ void monster_start_go (edict_t *self)
 		fixup = false;
 		while ((target = G_Find (target, FOFS(targetname), self->target)) != NULL)
 		{
+			//Hastings-Add code to ignore same team player here, and target opposing enemies
 			if (strcmp(target->classname, "point_combat") == 0)
 			{
 				self->combattarget = self->target;
@@ -604,6 +605,7 @@ void monster_start_go (edict_t *self)
 		target = NULL;
 		while ((target = G_Find (target, FOFS(targetname), self->combattarget)) != NULL)
 		{
+			//Hastings-replicate code to ignore same team player here, and target opposing enemies
 			if (strcmp(target->classname, "point_combat") != 0)
 			{
 				gi.dprintf("%s at (%i %i %i) has a bad combattarget %s : %s at (%i %i %i)\n",
@@ -616,6 +618,7 @@ void monster_start_go (edict_t *self)
 
 	if (self->target)
 	{
+		//Hastings-modify G_PickTarget to ignore team members
 		self->goalentity = self->movetarget = G_PickTarget(self->target);
 		if (!self->movetarget)
 		{

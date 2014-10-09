@@ -348,6 +348,12 @@ void G_RunFrame (void)
 		G_RunEntity (ent);
 	}
 
+/*	if(leftsideBottomLeftSpawned)//Hastings
+	{
+
+	}
+*/
+
 	// see if it is time to end a deathmatch
 	CheckDMRules ();
 

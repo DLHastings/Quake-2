@@ -70,7 +70,7 @@ void ClipGibVelocity (edict_t *ent)
 gibs
 =================
 */
-void gib_think (edict_t *self)
+void gib_think (edict_t *self)//Hastings
 {
 	self->s.frame++;
 	self->nextthink = level.time + FRAMETIME;

@@ -96,7 +96,7 @@ NULL will be returned if the end of the list is reached.
 */
 #define MAXCHOICES	8
 
-edict_t *G_PickTarget (char *targetname)
+edict_t *G_PickTarget (char *targetname)//Hastings-fix to avoid targeting team members, remember to modify all instances of G_PickTarget for given args
 {
 	edict_t	*ent = NULL;
 	int		num_choices = 0;
@@ -412,6 +412,16 @@ edict_t *G_Spawn (void)
 	globals.num_edicts++;
 	G_InitEdict (e);
 	return e;
+}
+
+//Hastings
+void G_SpawnerThink (edict_t *ent)
+{
+	
+	//spawns a wave of monsters
+//	ent->target= SP_monster_infantry;
+	ent->nextthink = level.time + 120;
+	gi.dprintf("Spawner Thinking(G_SpawnerThink)\n");
 }
 
 /*
