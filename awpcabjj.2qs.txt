@@ -1,0 +1,203 @@
+﻿Fixed issue where monster c files where not showing up in directory. working towards spawning monsters
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch SpawnEnemiesCTF
+# Changes to be committed:
+#	new file:   ReleaseAXP/gameaxp.dll
+#	new file:   ReleaseAXP/gameaxp.exp
+#	new file:   ReleaseAXP/gameaxp.lib
+#	new file:   jxqlssvx.h5h.txt
+#	new file:   src/Debug/BscMake.command.1.tlog
+#	new file:   src/Debug/CL.read.1.tlog
+#	new file:   src/Debug/CL.write.1.tlog
+#	new file:   src/Debug/bscmake.read.1.tlog
+#	new file:   src/Debug/bscmake.write.1.tlog
+#	new file:   src/Debug/cl.command.1.tlog
+#	new file:   src/Debug/g_ai.obj
+#	new file:   src/Debug/g_ai.sbr
+#	new file:   src/Debug/g_chase.obj
+#	new file:   src/Debug/g_chase.sbr
+#	new file:   src/Debug/g_cmds.obj
+#	new file:   src/Debug/g_cmds.sbr
+#	new file:   src/Debug/g_combat.obj
+#	new file:   src/Debug/g_combat.sbr
+#	new file:   src/Debug/g_ctf.obj
+#	new file:   src/Debug/g_ctf.sbr
+#	new file:   src/Debug/g_func.obj
+#	new file:   src/Debug/g_func.sbr
+#	new file:   src/Debug/g_items.obj
+#	new file:   src/Debug/g_items.sbr
+#	new file:   src/Debug/g_main.obj
+#	new file:   src/Debug/g_main.sbr
+#	new file:   src/Debug/g_misc.obj
+#	new file:   src/Debug/g_misc.sbr
+#	new file:   src/Debug/g_monster.obj
+#	new file:   src/Debug/g_monster.sbr
+#	new file:   src/Debug/g_phys.obj
+#	new file:   src/Debug/g_phys.sbr
+#	new file:   src/Debug/g_save.obj
+#	new file:   src/Debug/g_save.sbr
+#	new file:   src/Debug/g_spawn.obj
+#	new file:   src/Debug/g_spawn.sbr
+#	new file:   src/Debug/g_svcmds.obj
+#	new file:   src/Debug/g_svcmds.sbr
+#	new file:   src/Debug/g_target.obj
+#	new file:   src/Debug/g_target.sbr
+#	new file:   src/Debug/g_trigger.obj
+#	new file:   src/Debug/g_trigger.sbr
+#	new file:   src/Debug/g_utils.obj
+#	new file:   src/Debug/g_utils.sbr
+#	new file:   src/Debug/g_weapon.obj
+#	new file:   src/Debug/g_weapon.sbr
+#	new file:   src/Debug/game.bsc
+#	new file:   src/Debug/game.dll.intermediate.manifest
+#	new file:   src/Debug/game.lastbuildstate
+#	new file:   src/Debug/game.log
+#	new file:   src/Debug/game.vcxprojResolveAssemblyReference.cache
+#	new file:   src/Debug/game.write.1.tlog
+#	new file:   src/Debug/gamex86.dll
+#	new file:   src/Debug/gamex86.exp
+#	new file:   src/Debug/gamex86.lib
+#	new file:   src/Debug/link.command.1.tlog
+#	new file:   src/Debug/link.read.1.tlog
+#	new file:   src/Debug/link.write.1.tlog
+#	new file:   src/Debug/m_move.obj
+#	new file:   src/Debug/m_move.sbr
+#	new file:   src/Debug/mt.command.1.tlog
+#	new file:   src/Debug/mt.read.1.tlog
+#	new file:   src/Debug/mt.write.1.tlog
+#	new file:   src/Debug/p_client.obj
+#	new file:   src/Debug/p_client.sbr
+#	new file:   src/Debug/p_hud.obj
+#	new file:   src/Debug/p_hud.sbr
+#	new file:   src/Debug/p_menu.obj
+#	new file:   src/Debug/p_menu.sbr
+#	new file:   src/Debug/p_trail.obj
+#	new file:   src/Debug/p_trail.sbr
+#	new file:   src/Debug/p_view.obj
+#	new file:   src/Debug/p_view.sbr
+#	new file:   src/Debug/p_weapon.obj
+#	new file:   src/Debug/p_weapon.sbr
+#	new file:   src/Debug/q_shared.obj
+#	new file:   src/Debug/q_shared.sbr
+#	new file:   src/Debug/vc100.idb
+#	new file:   src/Debug/vc100.pdb
+#	new file:   src/ReleaseAXP/CL.read.1.tlog
+#	new file:   src/ReleaseAXP/CL.write.1.tlog
+#	new file:   src/ReleaseAXP/cl.command.1.tlog
+#	renamed:    src/release/g_ai.obj -> src/ReleaseAXP/g_ai.obj
+#	new file:   src/ReleaseAXP/g_chase.obj
+#	new file:   src/ReleaseAXP/g_cmds.obj
+#	new file:   src/ReleaseAXP/g_combat.obj
+#	new file:   src/ReleaseAXP/g_ctf.obj
+#	renamed:    src/release/g_func.obj -> src/ReleaseAXP/g_func.obj
+#	new file:   src/ReleaseAXP/g_items.obj
+#	new file:   src/ReleaseAXP/g_main.obj
+#	new file:   src/ReleaseAXP/g_misc.obj
+#	renamed:    src/release/g_monster.obj -> src/ReleaseAXP/g_monster.obj
+#	new file:   src/ReleaseAXP/g_phys.obj
+#	new file:   src/ReleaseAXP/g_save.obj
+#	new file:   src/ReleaseAXP/g_spawn.obj
+#	new file:   src/ReleaseAXP/g_svcmds.obj
+#	renamed:    src/release/g_target.obj -> src/ReleaseAXP/g_target.obj
+#	renamed:    src/release/g_trigger.obj -> src/ReleaseAXP/g_trigger.obj
+#	new file:   src/ReleaseAXP/g_utils.obj
+#	renamed:    src/release/g_weapon.obj -> src/ReleaseAXP/g_weapon.obj
+#	new file:   src/ReleaseAXP/game.dll.intermediate.manifest
+#	new file:   src/ReleaseAXP/game.lastbuildstate
+#	new file:   src/ReleaseAXP/game.log
+#	new file:   src/ReleaseAXP/game.write.1.tlog
+#	new file:   src/ReleaseAXP/link.command.1.tlog
+#	new file:   src/ReleaseAXP/link.read.1.tlog
+#	new file:   src/ReleaseAXP/link.write.1.tlog
+#	renamed:    src/release/m_move.obj -> src/ReleaseAXP/m_move.obj
+#	new file:   src/ReleaseAXP/mt.command.1.tlog
+#	new file:   src/ReleaseAXP/mt.read.1.tlog
+#	new file:   src/ReleaseAXP/mt.write.1.tlog
+#	new file:   src/ReleaseAXP/p_client.obj
+#	new file:   src/ReleaseAXP/p_hud.obj
+#	new file:   src/ReleaseAXP/p_menu.obj
+#	renamed:    src/release/p_trail.obj -> src/ReleaseAXP/p_trail.obj
+#	new file:   src/ReleaseAXP/p_view.obj
+#	new file:   src/ReleaseAXP/p_weapon.obj
+#	renamed:    src/release/q_shared.obj -> src/ReleaseAXP/q_shared.obj
+#	modified:   src/g_ctf.c
+#	modified:   src/g_items.c
+#	modified:   src/g_local.h
+#	modified:   src/g_main.c
+#	modified:   src/g_misc.c
+#	modified:   src/g_monster.c
+#	modified:   src/g_spawn.c
+#	modified:   src/g_target.c
+#	modified:   src/g_utils.c
+#	modified:   src/game.sdf
+#	new file:   src/game.sln.docstates.suo
+#	modified:   src/game.suo
+#	modified:   src/game.vcxproj
+#	modified:   src/game.vcxproj.filters
+#	modified:   src/release/CL.read.1.tlog
+#	modified:   src/release/CL.write.1.tlog
+#	modified:   src/release/cl.command.1.tlog
+#	modified:   src/release/g_ai.obj
+#	modified:   src/release/g_chase.obj
+#	modified:   src/release/g_cmds.obj
+#	modified:   src/release/g_combat.obj
+#	new file:   src/release/g_ctf.obj
+#	modified:   src/release/g_func.obj
+#	modified:   src/release/g_items.obj
+#	modified:   src/release/g_main.obj
+#	modified:   src/release/g_misc.obj
+#	modified:   src/release/g_monster.obj
+#	modified:   src/release/g_phys.obj
+#	modified:   src/release/g_save.obj
+#	modified:   src/release/g_spawn.obj
+#	modified:   src/release/g_svcmds.obj
+#	modified:   src/release/g_target.obj
+#	modified:   src/release/g_trigger.obj
+#	modified:   src/release/g_utils.obj
+#	modified:   src/release/g_weapon.obj
+#	modified:   src/release/game.log
+#	modified:   src/release/game.write.1.tlog
+#	new file:   src/release/gamex86.dll
+#	new file:   src/release/gamex86.dll.intermediate.manifest
+#	new file:   src/release/gamex86.exp
+#	new file:   src/release/gamex86.lib
+#	modified:   src/release/link.command.1.tlog
+#	modified:   src/release/link.read.1.tlog
+#	modified:   src/release/link.write.1.tlog
+#	modified:   src/release/m_actor.obj
+#	modified:   src/release/m_berserk.obj
+#	modified:   src/release/m_boss2.obj
+#	modified:   src/release/m_boss3.obj
+#	modified:   src/release/m_boss31.obj
+#	modified:   src/release/m_boss32.obj
+#	modified:   src/release/m_brain.obj
+#	modified:   src/release/m_chick.obj
+#	modified:   src/release/m_flash.obj
+#	modified:   src/release/m_flipper.obj
+#	modified:   src/release/m_float.obj
+#	modified:   src/release/m_flyer.obj
+#	modified:   src/release/m_gladiator.obj
+#	modified:   src/release/m_gunner.obj
+#	modified:   src/release/m_hover.obj
+#	modified:   src/release/m_infantry.obj
+#	modified:   src/release/m_insane.obj
+#	modified:   src/release/m_medic.obj
+#	modified:   src/release/m_move.obj
+#	modified:   src/release/m_mutant.obj
+#	modified:   src/release/m_parasite.obj
+#	modified:   src/release/m_soldier.obj
+#	modified:   src/release/m_supertank.obj
+#	modified:   src/release/m_tank.obj
+#	modified:   src/release/mt.command.1.tlog
+#	modified:   src/release/mt.read.1.tlog
+#	modified:   src/release/mt.write.1.tlog
+#	modified:   src/release/p_client.obj
+#	modified:   src/release/p_hud.obj
+#	new file:   src/release/p_menu.obj
+#	modified:   src/release/p_trail.obj
+#	modified:   src/release/p_view.obj
+#	modified:   src/release/p_weapon.obj
+#	modified:   src/release/q_shared.obj
+#
+

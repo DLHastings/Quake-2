@@ -1089,3 +1089,4 @@ struct edict_s
 #include "g_ctf.h"
 //ZOID
 
+#include "g_hordeVsHorde.h"

@@ -162,6 +162,9 @@
     <ClCompile Include="m_tank.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="g_hordeVsHorde.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="g_ctf.h">
@@ -246,6 +249,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="m_tank.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="g_hordeVsHorde.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

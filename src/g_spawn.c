@@ -569,8 +569,18 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 		entities = ED_ParseEdict (entities, ent);
 		
 		// yet another map hack
-		if (!stricmp(level.mapname, "command") && !stricmp(ent->classname, "trigger_once") && !stricmp(ent->model, "*27"))
+		if (!stricmp(level.mapname, "command") && !stricmp(ent->classname, "trigger_once") && !stricmp(ent->model, "*27"))//Hastings-handy example to hack the map
 			ent->spawnflags &= ~SPAWNFLAG_NOT_HARD;
+
+		//Hastings-Record spawners in map
+		/*i=0
+		while (spawnerNames[i])
+		{
+			spawnerNames[i]
+			if(stricmp(ent->classname, "trigger_once"))
+				spawnersByName[i]
+		i++
+		}*/
 
 		// remove things (except the world) from different skill levels or deathmatch
 		if (ent != g_edicts)
@@ -611,8 +621,10 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 	PlayerTrail_Init ();
 
 //ZOID
-	CTFSetupTechSpawn();
+	CTFSetupTechSpawn();//Hastings-Remove this if you want to remove tech spawns
 //ZOID
+
+	setupHordeVsHordeSpawn();
 }
 
 

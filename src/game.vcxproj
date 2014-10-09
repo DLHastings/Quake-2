@@ -279,6 +279,7 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'"> /QA21164 /MTd   /QA21164 /MTd </AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release Alpha|Win32'"> /QA21164   /QA21164 </AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="g_hordeVsHorde.c" />
     <ClCompile Include="g_items.c">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'"> /QA21164 /MTd   /QA21164 /MTd </AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release Alpha|Win32'"> /QA21164   /QA21164 </AdditionalOptions>
@@ -389,6 +390,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="g_ctf.h" />
+    <ClInclude Include="g_hordeVsHorde.h" />
     <ClInclude Include="g_local.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="m_actor.h" />

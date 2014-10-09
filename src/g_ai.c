@@ -28,7 +28,7 @@ will be null.
 In coop games, sight_client will cycle between the clients.
 =================
 */
-void AI_SetSightClient (void)
+void AI_SetSightClient (void)//Hastings this code controls AI behavior, may need modification to make mosters attack monsters
 {
 	edict_t	*ent;
 	int		start, check;
