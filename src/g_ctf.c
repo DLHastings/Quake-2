@@ -366,12 +366,14 @@ edict_t *SelectCTFSpawnPoint (edict_t *ent)
 	float	range, range1, range2;
 	char	*cname;
 
+	
+	/*
 	if (ent->client->resp.ctf_state != CTF_STATE_START)
 		if ( (int)(dmflags->value) & DF_SPAWN_FARTHEST)
 			return SelectFarthestDeathmatchSpawnPoint ();
 		else
 			return SelectRandomDeathmatchSpawnPoint ();
-
+	*/
 	ent->client->resp.ctf_state = CTF_STATE_PLAYING;
 
 	switch (ent->client->resp.ctf_team) {
@@ -384,7 +386,10 @@ edict_t *SelectCTFSpawnPoint (edict_t *ent)
 	default:
 		return SelectRandomDeathmatchSpawnPoint();
 	}
-
+	if (hvh)
+	{
+		return G_Find (NULL, FOFS(targetname), cname);
+	}
 	spot = NULL;
 	range1 = range2 = 99999;
 	spot1 = spot2 = NULL;
@@ -2379,7 +2384,7 @@ void SP_misc_ctf_small_banner (edict_t *ent)
 
 /*-----------------------------------------------------------------------*/
 
-void CTFJoinTeam(edict_t *ent, int desired_team)
+void CTFJoinTeam(edict_t *ent, int desired_team)//Hastings-defin
 {
 	char *s;
 
@@ -2401,7 +2406,7 @@ void CTFJoinTeam(edict_t *ent, int desired_team)
 		ent->client->pers.netname, CTFTeamName(desired_team));
 }
 
-void CTFJoinTeam1(edict_t *ent, pmenu_t *p)
+void CTFJoinTeam1(edict_t *ent, pmenu_t *p)//Hastings-join entity team
 {
 	CTFJoinTeam(ent, CTF_TEAM1);
 }

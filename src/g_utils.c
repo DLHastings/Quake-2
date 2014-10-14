@@ -414,15 +414,7 @@ edict_t *G_Spawn (void)
 	return e;
 }
 
-//Hastings
-void G_SpawnerThink (edict_t *ent)
-{
-	
-	//spawns a wave of monsters
-//	ent->target= SP_monster_infantry;
-	ent->nextthink = level.time + 120;
-	gi.dprintf("Spawner Thinking(G_SpawnerThink)\n");
-}
+
 
 /*
 =================
