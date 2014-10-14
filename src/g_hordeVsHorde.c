@@ -1,5 +1,6 @@
 #include "g_local.h"
 //#include "g_target.c"//problems occur when included
+//#include "g_spawn.c"
 
 cvar_t *hvh;
 
@@ -8,30 +9,20 @@ cvar_t *hvh;
 static int wave = 0;
 
 static char *spawnerNames[] = {
-	"leftsideBottomLeftSpawner", "leftsideBottomRightSpawner", "leftsideTopLeftSpawner", "leftsideTopRightSpawner",
+	"leftsideBottomLeftSpawner", "leftsideBottomRightSpawner",  "leftsideTopRightSpawner","leftsideTopLeftSpawner",
+	"rightsideBottomLeftSpawner", "rightsideBottomRightSpawner",  "rightsideTopRightSpawner","rightsideTopLeftSpawner",
 	NULL
 };
-/*
-pmenu_t weaponmenu[] = {
-	{ "*Quake II",			PMENU_ALIGN_CENTER, NULL, NULL },
-	{ "*Select your weapon",	PMENU_ALIGN_CENTER, NULL, NULL },
-	{ NULL,					PMENU_ALIGN_CENTER, NULL, NULL },
-	{ NULL,					PMENU_ALIGN_CENTER, NULL, NULL },
-	{ "Rifle(weapon_machinegun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRifle },
-	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "Shotgun(weapon_shotgun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectShotgun },
-	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "Railgun(weapon_railgun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRailgun },
-	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "Rocket Launcher(weapon_rocketlauncher)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRocketlauncher },
-	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "Use [ and ] to move cursor",	PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "ENTER to select",	PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "ESC to Exit Menu",	PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "(TAB to Return)",	PMENU_ALIGN_LEFT, NULL, NULL },
-	//{ "v" CTF_STRING_VERSION,	PMENU_ALIGN_RIGHT, NULL, NULL },
+static char *pathnames[] = {
+	"LeftTeamPath1Point1", "LeftTeamPath2Point1", "LeftTeamPath3Point1", "LeftTeamPath4Point1",
+	"RightTeamPath1Point1", "RightTeamPath2Point1", "RightTeamPath3Point1", "RightTeamPath4Point1",
+	NULL
 };
-*/
+
+void ED_CallSpawn (edict_t *ent);
+void use_target_spawner (edict_t *self, edict_t *other, edict_t *activator);
+
+/**/
 void WeaponSelect(edict_t *ent, char *desired_weapon)//Hastings-defin
 {
 	//char *s;
@@ -76,6 +67,26 @@ void WeaponSelectRocketlauncher(edict_t *ent, pmenu_t *p)
 	WeaponSelect(ent, "weapon_rocketlauncher");
 }
 
+pmenu_t weaponmenu[] = {
+	{ "*Quake II",			PMENU_ALIGN_CENTER, NULL, NULL },
+	{ "*Select your weapon",	PMENU_ALIGN_CENTER, NULL, NULL },
+	{ NULL,					PMENU_ALIGN_CENTER, NULL, NULL },
+	{ NULL,					PMENU_ALIGN_CENTER, NULL, NULL },
+	{ "Rifle(weapon_machinegun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRifle },
+	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
+	{ "Shotgun(weapon_shotgun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectShotgun },
+	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
+	{ "Railgun(weapon_railgun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRailgun },
+	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
+	{ "Rocket Launcher(weapon_rocketlauncher)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRocketlauncher },
+	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
+	{ "Use [ and ] to move cursor",	PMENU_ALIGN_LEFT, NULL, NULL },
+	{ "ENTER to select",	PMENU_ALIGN_LEFT, NULL, NULL },
+	{ "ESC to Exit Menu",	PMENU_ALIGN_LEFT, NULL, NULL },
+	{ "(TAB to Return)",	PMENU_ALIGN_LEFT, NULL, NULL },
+	//{ "v" CTF_STRING_VERSION,	PMENU_ALIGN_RIGHT, NULL, NULL },
+};
+
 void setupHordeVsHordeSpawn(void)
 {
 	//edict_t *ent;
@@ -92,10 +103,11 @@ static void findAndTriggerSpawners()//edict_t *ent)
 	
 	//gitem_t *spawner;
 	edict_t	*e;
+	edict_t	*f;
 	//edict_t *spot;
 	int i;
 	i = 0;
-	while (spawnerNames[i]) 
+	while (spawnerNames[i]&&pathnames[i]) 
 	{
 		//gi.dprintf ("%s was triggered for the first time\n", spawnerNames[i]);
 
@@ -106,6 +118,11 @@ static void findAndTriggerSpawners()//edict_t *ent)
 			gi.dprintf ("%s was triggered for the first time\n", spawnerNames[i]);//SpawnTech(spawners, spot);*/
 			e->nextthink=level.time + 30;
 			e->think = G_SpawnerThink;
+
+			if ((f = G_Find (NULL, FOFS(targetname), pathnames[i])) != NULL)//find(e, classname, "inv_spawn")
+			{
+				e->movetarget = f;
+			}
 			//G_SpawnerThink (e);
 		}
 		i++;
@@ -139,11 +156,13 @@ void G_SpawnerThink (edict_t *self)
 	//self->target= "monster_soldier_light";
 	self->nextthink = level.time + 30;
 	gi.dprintf("Spawner Thinking(%s)\n",self->targetname);
+	gi.dprintf("Spawner Thinking(%s)\n",self->target);
 
 	//ent = G_Spawn ();
+	//ent->targetname
 	//ED_CallSpawn (ent);
 	//SP_monster_soldier_light (edict_t *self)
-	//use_target_spawner (self, other, activator)//Hastings
+	use_target_spawner (self, NULL, NULL);//Hastings
 
 	//self->classname
 }

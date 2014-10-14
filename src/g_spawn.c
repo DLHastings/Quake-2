@@ -283,11 +283,16 @@ void ED_CallSpawn (edict_t *ent)
 	gitem_t	*item;
 	int		i;
 
+	
 	if (!ent->classname)
 	{
 		gi.dprintf ("ED_CallSpawn: NULL classname\n");
 		return;
 	}
+	/*else
+	{
+		gi.dprintf ("%s\n",ent->classname);
+	}*/
 
 	// check item spawn functions
 	for (i=0,item=itemlist ; i<game.num_items ; i++,item++)
