@@ -859,7 +859,8 @@ struct gclient_s
 	qboolean	inmenu;				// in menu
 	pmenuhnd_t	*menu;				// current menu
 //ZOID
-	qboolean	showinventory;		// set layout stat
+	qboolean	showinventory;		// set layout statq
+
 	qboolean	showhelp;
 	qboolean	showhelpicon;
 
@@ -989,6 +990,7 @@ struct edict_s
 	char		*targetname;
 	char		*killtarget;
 	char		*team;
+	qboolean	showweaponselect;		// selecting weapon Hastings-findmeplease
 	char		*pathtarget;
 	char		*deathtarget;
 	char		*combattarget;

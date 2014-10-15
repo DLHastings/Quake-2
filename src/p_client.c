@@ -5,6 +5,7 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo);
 
 void SP_misc_teleporter_dest (edict_t *ent);
 
+	
 //
 // Gross, ugly, disgustuing hack section
 //
@@ -573,6 +574,7 @@ but is called after each death and level change in deathmatch
 void InitClientPersistant (gclient_t *client)
 {
 	gitem_t		*item;
+	//char	*pickupName;
 
 	memset (&client->pers, 0, sizeof(client->pers));
 
@@ -589,6 +591,12 @@ void InitClientPersistant (gclient_t *client)
 	item = FindItem("Grapple");
 	client->pers.inventory[ITEM_INDEX(item)] = 1;
 //ZOID
+
+	//CTFOpenWeaponMenu();
+	//Hastings
+	//item = FindItem(pickupName);
+	//client->pers.inventory[ITEM_INDEX(item)] = 1;
+
 
 	client->pers.health			= 100;
 	client->pers.max_health		= 100;
@@ -1020,7 +1028,9 @@ void PutClientInServer (edict_t *ent)
 	// find a spawn point
 	// do it before setting health back up, so farthest
 	// ranging doesn't count this client
+	
 	SelectSpawnPoint (ent, spawn_origin, spawn_angles);
+	//CTFOpenWeaponMenu(ent);//Hastings
 
 	index = ent-g_edicts-1;
 	client = ent->client;
@@ -1102,6 +1112,7 @@ void PutClientInServer (edict_t *ent)
 	client->ps.pmove.origin[2] = spawn_origin[2]*8;
 //ZOID
 	client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
+
 //ZOID
 
 	if (deathmatch->value && ((int)dmflags->value & DF_FIXED_FOV))
@@ -1138,7 +1149,8 @@ void PutClientInServer (edict_t *ent)
 	ent->s.angles[ROLL] = 0;
 	VectorCopy (ent->s.angles, client->ps.viewangles);
 	VectorCopy (ent->s.angles, client->v_angle);
-
+	
+	CTFOpenWeaponMenu(ent); //Hastings-findmeplease
 //ZOID
 	if (CTFStartClient(ent))
 		return;
@@ -1459,6 +1471,24 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			&& (ucmd->buttons & BUTTON_ANY) )
 			level.exitintermission = true;
 		return;
+	}
+	else 
+
+	if (ent->showweaponselect)//Hastings- findmeplease
+	{
+		
+		client->ps.pmove.pm_type = PM_FREEZE;
+		// can exit intermission after five seconds
+		
+
+		/*if (level.time > level.intermissiontime + 5.0 
+			&& (ucmd->buttons & BUTTON_ANY) )
+			level.exitintermission = true;*/
+		return;
+	}
+	else if(client->ps.pmove.pm_type == PM_FREEZE)
+	{
+		client->ps.pmove.pm_type = PM_NORMAL;
 	}
 
 	pm_passent = ent;

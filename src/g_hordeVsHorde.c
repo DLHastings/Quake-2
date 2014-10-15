@@ -23,9 +23,12 @@ void ED_CallSpawn (edict_t *ent);
 void use_target_spawner (edict_t *self, edict_t *other, edict_t *activator);
 
 /**/
-void WeaponSelect(edict_t *ent, char *desired_weapon)//Hastings-defin
+void WeaponSelected(edict_t *ent, char *desired_weapon)//Hastings-defin
 {
 	//char *s;
+	//ent->item
+
+	
 
 	PMenu_Close(ent);
 	/*
@@ -49,22 +52,28 @@ void WeaponSelect(edict_t *ent, char *desired_weapon)//Hastings-defin
 
 void WeaponSelectRifle(edict_t *ent, pmenu_t *p)//Hastings-join entity team
 {
-	WeaponSelect(ent, "weapon_machinegun");
+	WeaponSelected(ent, "weapon_machinegun");
+	ent->client->pers.inventory[ITEM_INDEX(FindItem("Bullets"))] = 200;
 }
 
 void WeaponSelectShotgun(edict_t *ent, pmenu_t *p)
 {
-	WeaponSelect(ent, "weapon_shotgun");
+	WeaponSelected(ent, "weapon_shotgun");
+	ent->client->pers.inventory[ITEM_INDEX(FindItem("Shells"))] = 24;
+	
 }
 
 void WeaponSelectRailgun(edict_t *ent, pmenu_t *p)
 {
-	WeaponSelect(ent, "weapon_railgun");
+	WeaponSelected(ent, "weapon_railgun");
+	ent->client->pers.inventory[ITEM_INDEX(FindItem("Bullets"))] = 20;
 }
 
 void WeaponSelectRocketlauncher(edict_t *ent, pmenu_t *p)
 {
-	WeaponSelect(ent, "weapon_rocketlauncher");
+	WeaponSelected(ent, "weapon_rocketlauncher");
+		ent->client->pers.inventory[ITEM_INDEX(FindItem("Rockets"))] = 7;
+	
 }
 
 pmenu_t weaponmenu[] = {
@@ -72,13 +81,13 @@ pmenu_t weaponmenu[] = {
 	{ "*Select your weapon",	PMENU_ALIGN_CENTER, NULL, NULL },
 	{ NULL,					PMENU_ALIGN_CENTER, NULL, NULL },
 	{ NULL,					PMENU_ALIGN_CENTER, NULL, NULL },
-	{ "Rifle(weapon_machinegun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRifle },
+	{ "Rifleman(weapon_machinegun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRifle },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "Shotgun(weapon_shotgun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectShotgun },
+	{ "Shotgunner(weapon_shotgun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectShotgun },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "Railgun(weapon_railgun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRailgun },
+	{ "Railgunner(weapon_railgun)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRailgun },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
-	{ "Rocket Launcher(weapon_rocketlauncher)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRocketlauncher },
+	{ "Demolitionist(weapon_rocketlauncher)",		PMENU_ALIGN_LEFT, NULL, WeaponSelectRocketlauncher },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL, NULL },
 	{ "Use [ and ] to move cursor",	PMENU_ALIGN_LEFT, NULL, NULL },
 	{ "ENTER to select",	PMENU_ALIGN_LEFT, NULL, NULL },
@@ -86,6 +95,108 @@ pmenu_t weaponmenu[] = {
 	{ "(TAB to Return)",	PMENU_ALIGN_LEFT, NULL, NULL },
 	//{ "v" CTF_STRING_VERSION,	PMENU_ALIGN_RIGHT, NULL, NULL },
 };
+
+void CTFUpdateWeaponMenu(edict_t *ent)
+{
+	static char levelname[32];
+	//static char team1players[32];
+	//static char team2players[32];
+	//int playersTeam1, playersTeam2, i;
+	//int rifle, shotgun, railgun, rocketlauncher;
+
+	weaponmenu[4].text = "Rifleman(machinegun)";
+	weaponmenu[4].SelectFunc = WeaponSelectRifle;
+	weaponmenu[6].text = "Shotgun(shotgun)";
+	weaponmenu[6].SelectFunc = WeaponSelectShotgun;
+	weaponmenu[8].text = "Railgunner(railgun)";
+	weaponmenu[8].SelectFunc = WeaponSelectRailgun;
+	weaponmenu[10].text = "Demolitionist(rocketlauncher)";
+	weaponmenu[10].SelectFunc = WeaponSelectRocketlauncher;
+
+	
+
+	/*if (ctf_forcejoin->string && *ctf_forcejoin->string) 
+	{
+		if (stricmp(ctf_forcejoin->string, "red") == 0) 
+		{
+			weaponmenu[6].text = NULL;
+			weaponmenu[6].SelectFunc = NULL;
+		} 
+		else if (stricmp(ctf_forcejoin->string, "blue") == 0) 
+		{
+			weaponmenu[4].text = NULL;
+			weaponmenu[4].SelectFunc = NULL;
+		}
+	}
+
+	if (ent->client->chase_target)
+		weaponmenu[8].text = "Leave Chase Camera";
+	else
+		weaponmenu[8].text = "Chase Camera";
+	*/
+	levelname[0] = '*';
+	if (g_edicts[0].message)
+		strncpy(levelname+1, g_edicts[0].message, sizeof(levelname) - 2);
+	else
+		strncpy(levelname+1, level.mapname, sizeof(levelname) - 2);
+	levelname[sizeof(levelname) - 1] = 0;
+
+	/*playersTeam1 = playersTeam2 = 0;
+	for (i = 0; i < maxclients->value; i++) 
+	{
+		if (!g_edicts[i+1].inuse)
+			continue;
+		if (game.clients[i].resp.ctf_team == CTF_TEAM1)
+			playersTeam1++;
+		else if (game.clients[i].resp.ctf_team == CTF_TEAM2)
+			playersTeam2++;
+	}
+
+	sprintf(team1players, "  (%d players)", playersTeam1);
+	sprintf(team2players, "  (%d players)", playersTeam2);*/
+
+	weaponmenu[2].text = levelname;
+	/*if (weaponmenu[4].text)
+		weaponmenu[5].text = team1players;
+	else
+		weaponmenu[5].text = NULL;
+	if (weaponmenu[6].text)
+		weaponmenu[7].text = team2players;
+	else
+		weaponmenu[7].text = NULL;
+	
+	if (playersTeam1 > playersTeam2)
+		return CTF_TEAM1;
+	else if (playersTeam2 > playersTeam1)
+		return CTF_TEAM1;
+	return (rand() & 1) ? CTF_TEAM1 : CTF_TEAM2;*/
+}
+
+void CTFOpenWeaponMenu(edict_t *ent)
+{
+	//int weapon;
+	ent->showweaponselect = true;
+	CTFUpdateWeaponMenu(ent);
+
+	/*switch(weapon)
+	{
+	case 1:
+		weapon = 4;
+		break;
+	case 2:
+		weapon = 6;
+		break;
+	case 3:
+		weapon = 8;
+		break;
+	default:
+		weapon = 10;
+		break;
+	}*/
+	PMenu_Open(ent, weaponmenu, 4, sizeof(weaponmenu) / sizeof(pmenu_t));
+	
+	ent->showweaponselect = false;//Hastings-findmeplease
+}
 
 void setupHordeVsHordeSpawn(void)
 {
@@ -132,6 +243,7 @@ static void findAndTriggerSpawners()//edict_t *ent)
 //Hastings
 void G_SpawnerThink (edict_t *self)
 {
+	int enemiesPerWave = 3;
 	//int wave;
 	//edict_t *ent;//monster ent to be used later
 	
@@ -143,7 +255,8 @@ void G_SpawnerThink (edict_t *self)
 	//spawns a wave of monsters
 	//monster_soldier_light
 //	ent->target= SP_monster_infantry;
-	switch (wave) {
+	switch (wave) 
+	{
 	case 1:
 		self->target= "monster_soldier_light";
 		break;
@@ -152,6 +265,7 @@ void G_SpawnerThink (edict_t *self)
 		break;
 	default:
 		self->target= "monster_soldier_light";
+		wave=1;
 	}
 	//self->target= "monster_soldier_light";
 	self->nextthink = level.time + 30;
@@ -162,8 +276,11 @@ void G_SpawnerThink (edict_t *self)
 	//ent->targetname
 	//ED_CallSpawn (ent);
 	//SP_monster_soldier_light (edict_t *self)
-	use_target_spawner (self, NULL, NULL);//Hastings
-
+	//while(enemiesPerWave>0)
+	//{
+		use_target_spawner (self, NULL, NULL);//Hastings
+	//	enemiesPerWave--;
+	//}
 	//self->classname
 }
 /*

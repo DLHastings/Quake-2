@@ -296,7 +296,8 @@ void CTFAssignSkin(edict_t *ent, char *s)
 	else
 		strcpy(t, "male/");
 
-	switch (ent->client->resp.ctf_team) {
+	switch (ent->client->resp.ctf_team) 
+	{
 	case CTF_TEAM1:
 		gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s%s", 
 			ent->client->pers.netname, t, CTF_TEAM1_SKIN) );
@@ -366,7 +367,8 @@ edict_t *SelectCTFSpawnPoint (edict_t *ent)
 	float	range, range1, range2;
 	char	*cname;
 
-	
+	//CTFOpenWeaponMenu(ent);
+	//PMenu_Open(*ent, *entries, cur, num)
 	/*
 	if (ent->client->resp.ctf_state != CTF_STATE_START)
 		if ( (int)(dmflags->value) & DF_SPAWN_FARTHEST)

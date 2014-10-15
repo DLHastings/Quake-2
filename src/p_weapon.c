@@ -7,6 +7,11 @@
 static qboolean	is_quad;
 static byte		is_silenced;
 
+static int rifleClipMax = 9;
+static int rocketClipMax = 1;
+static int shotgunClipMax = 1;
+static int railgunClipMax = 5;
+
 
 void weapon_grenade_fire (edict_t *ent, qboolean held);
 

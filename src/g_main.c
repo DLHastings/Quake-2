@@ -315,6 +315,8 @@ void G_RunFrame (void)
 		return;
 	}
 
+
+
 	//
 	// treat each object in turn
 	// even the world gets a chance to think

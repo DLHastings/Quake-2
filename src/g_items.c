@@ -107,6 +107,7 @@ void DoRespawn (edict_t *ent)//Hastings
 
 		master = ent->teammaster;
 
+
 //ZOID
 //in ctf, when we are weapons stay, only the master of a team of weapons
 //is spawned
@@ -125,6 +126,8 @@ void DoRespawn (edict_t *ent)//Hastings
 			for (count = 0, ent = master; count < choice; ent = ent->chain, count++)
 				;
 		}
+		
+		
 	}
 
 	ent->svflags &= ~SVF_NOCLIENT;
@@ -133,6 +136,7 @@ void DoRespawn (edict_t *ent)//Hastings
 
 	// send an effect
 	ent->s.event = EV_ITEM_RESPAWN;
+	//CTFOpenWeaponMenu(ent); //Hastings-findmeplease
 }
 
 void SetRespawn (edict_t *ent, float delay)

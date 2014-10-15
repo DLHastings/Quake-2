@@ -347,7 +347,8 @@ void Cmd_Help_f (edict_t *ent)
 	// this is for backwards compatability
 	if (deathmatch->value)
 	{
-		Cmd_Score_f (ent);
+		//Cmd_Score_f (ent);
+		CTFOpenWeaponMenu(ent);
 		return;
 	}
 
@@ -363,6 +364,7 @@ void Cmd_Help_f (edict_t *ent)
 	ent->client->showhelp = true;
 	ent->client->resp.helpchanged = 0;
 	HelpComputer (ent);
+	
 }
 
 
